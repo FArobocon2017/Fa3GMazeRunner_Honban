@@ -1,7 +1,7 @@
 #include "../include/MazeRunner.h"
 #include "../include/MicroMouseDriver.h"
 
-// Int[3]Å®Direction
+// Int[3]‚ÜíDirection
 Direction MazeRunner::setWallData(int* wall, Direction nowDir)
 {
 	Direction dir;

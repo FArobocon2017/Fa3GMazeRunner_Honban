@@ -10,14 +10,14 @@
 
 using namespace std;
 
-//’Tõ‚µ‚½–À˜H‚Ì•Çî•ñ‚ª‚Í‚¢‚é
+//æ¢ç´¢ã—ãŸè¿·è·¯ã®å£æƒ…å ±ãŒã¯ã„ã‚‹
 Maze maze;
-//ƒNƒ‰ƒbƒVƒ…‚µ‚½‚Ì‚½‚ß‚ÌƒoƒbƒNƒAƒbƒv
+//ã‚¯ãƒ©ãƒƒã‚·ãƒ¥ã—ãŸæ™‚ã®ãŸã‚ã®ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—
 Maze maze_backup;
 
-//’Tõ‚Ìw¦‚ğo‚·
+//æ¢ç´¢ã®æŒ‡ç¤ºã‚’å‡ºã™
 Agent agent(maze);
-//‘O‰ñ‚ÌAgent‚Ìó‘Ô‚ğ•Û‘¶‚µ‚Æ‚­
+//å‰å›ã®Agentã®çŠ¶æ…‹ã‚’ä¿å­˜ã—ã¨ã
 Agent::State prevState = Agent::IDLE;
 
 int main()
@@ -28,17 +28,17 @@ int main()
 	MazeRunner mazeRunner;
 	int wall[3] = {0};
 	int prev_State = 0;
-	// –À˜H’TõŠJn
+	// è¿·è·¯æ¢ç´¢é–‹å§‹
 	while(1)
 	{
-		//ƒZƒ“ƒT‚©‚çæ“¾‚µ‚½•Çî•ñ‚ğ“ü‚ê‚é
+		//ã‚»ãƒ³ã‚µã‹ã‚‰å–å¾—ã—ãŸå£æƒ…å ±ã‚’å…¥ã‚Œã‚‹
 		wallDetector.getWallData(wall);
 		Direction wallData = mazeRunner.setWallData(wall, nowDir);
 		
-		//ƒƒ{ƒbƒg‚ÌÀ•W‚ğæ“¾
+		//ãƒ­ãƒœãƒƒãƒˆã®åº§æ¨™ã‚’å–å¾—
 		IndexVec robotPos = nowPos;
 		
-		//•Çî•ñ‚ğXV Ÿ‚Éi‚Ş‚×‚«•ûŒü‚ğŒvZ
+		//å£æƒ…å ±ã‚’æ›´æ–° æ¬¡ã«é€²ã‚€ã¹ãæ–¹å‘ã‚’è¨ˆç®—
 		agent.update(robotPos, wallData);
 
 
@@ -46,57 +46,57 @@ int main()
 		cout << "wallData" << wallData[7] << "" << wallData[6]<< "" << wallData[5]<< "" << wallData[4]<< endl;
 		cout << "agent.getState()" << agent.getState() << endl;
 
-		//Agent‚Ìó‘Ô‚ğŠm”F
-		//FINISHED‚É‚È‚Á‚½‚çŒv‘ª‘–s‚É‚¤‚Â‚é
+		//Agentã®çŠ¶æ…‹ã‚’ç¢ºèª
+		//FINISHEDã«ãªã£ãŸã‚‰è¨ˆæ¸¬èµ°è¡Œã«ã†ã¤ã‚‹
 		if (agent.getState() == Agent::FINISHED)
 		{
 			break;
 		}
-		//ƒS[ƒ‹‚É‚½‚Ç‚è’…‚¢‚½uŠÔ‚Éˆê“x‚¾‚¯maze‚ÌƒoƒbƒNƒAƒbƒv‚ğ‚Æ‚é
-		//MazeƒNƒ‰ƒX‚Íoperator=‚ª’è‹`‚µ‚Ä‚ ‚é‚©‚ça = b‚ÅƒRƒs[‚Å‚«‚é
+		//ã‚´ãƒ¼ãƒ«ã«ãŸã©ã‚Šç€ã„ãŸç¬é–“ã«ä¸€åº¦ã ã‘mazeã®ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‚’ã¨ã‚‹
+		//Mazeã‚¯ãƒ©ã‚¹ã¯operator=ãŒå®šç¾©ã—ã¦ã‚ã‚‹ã‹ã‚‰a = bã§ã‚³ãƒ”ãƒ¼ã§ãã‚‹
 		if (prev_State == Agent::SEARCHING_NOT_GOAL && agent.getState() == Agent::SEARCHING_REACHED_GOAL) 
 		{
 			maze_backup = maze;
 		}
 		prev_State = agent.getState();
-		//ˆê“x‚ÍƒS[ƒ‹‚É‚½‚Ç‚è’…‚«A­‚È‚­‚Æ‚àƒS[ƒ‹‚Å‚«‚éó‘Ô‚Å’Ç‰Á‚Ì’Tõ‚ğ‚µ‚Ä‚¢‚é‚ªA
-		//‚à‚¤ŠÔ‚ª–³‚¢‚©‚ç’Tõ‚ğ‚¤‚¿‚â‚ß‚ÄƒXƒ^[ƒg’n“_‚É–ß‚é
+		//ä¸€åº¦ã¯ã‚´ãƒ¼ãƒ«ã«ãŸã©ã‚Šç€ãã€å°‘ãªãã¨ã‚‚ã‚´ãƒ¼ãƒ«ã§ãã‚‹çŠ¶æ…‹ã§è¿½åŠ ã®æ¢ç´¢ã‚’ã—ã¦ã„ã‚‹ãŒã€
+		//ã‚‚ã†æ™‚é–“ãŒç„¡ã„ã‹ã‚‰æ¢ç´¢ã‚’ã†ã¡ã‚„ã‚ã¦ã‚¹ã‚¿ãƒ¼ãƒˆåœ°ç‚¹ã«æˆ»ã‚‹
 		//if (isTimeOut() && agent.getState() == Agent::SEARCHING_REACHED_GOAL)
 		if (agent.getState() == Agent::SEARCHING_REACHED_GOAL)
 		{
 			agent.forceGotoStart();
 		}
-		//Agent‚Ìó‘Ô‚ª’Tõ’†‚Ìê‡‚ÍŸ‚Éi‚Ş‚×‚«•ûŒü‚ğæ“¾‚·‚é
+		//Agentã®çŠ¶æ…‹ãŒæ¢ç´¢ä¸­ã®å ´åˆã¯æ¬¡ã«é€²ã‚€ã¹ãæ–¹å‘ã‚’å–å¾—ã™ã‚‹
 		Direction nextDir = agent.getNextDirection();
-		//nextDir‚Ì¦‚·•ûŒü‚Éi‚Ş
-		//“Ë‘R¡‚Æ180“x‹t‚Ì•ûŒü‚ğ¦‚µ‚Ä‚­‚éê‡‚à‚ ‚é‚Ì‚Å’ˆÓ
-		//~‚Ü‚ç‚È‚¢‚Æ•Ç‚É‚Ô‚Â‚©‚é
-		mazeRunner.robotMove(nowDir, nextDir);  //robotMoveŠÖ”‚ÍDirectionŒ^‚ğó‚¯æ‚Á‚Äƒƒ{ƒbƒg‚ğ‚»‚Á‚¿‚É“®‚©‚·ŠÖ”
+		//nextDirã®ç¤ºã™æ–¹å‘ã«é€²ã‚€
+		//çªç„¶ä»Šã¨180åº¦é€†ã®æ–¹å‘ã‚’ç¤ºã—ã¦ãã‚‹å ´åˆã‚‚ã‚ã‚‹ã®ã§æ³¨æ„
+		//æ­¢ã¾ã‚‰ãªã„ã¨å£ã«ã¶ã¤ã‹ã‚‹
+		mazeRunner.robotMove(nowDir, nextDir);  //robotMoveé–¢æ•°ã¯Directionå‹ã‚’å—ã‘å–ã£ã¦ãƒ­ãƒœãƒƒãƒˆã‚’ãã£ã¡ã«å‹•ã‹ã™é–¢æ•°
 		
 		nowPos = mazeRunner.setRobotPos(nowPos, nextDir);
 		nowDir = nextDir;
 usleep(100000);
 	}
 	
-	//ƒƒ{ƒbƒg‚ğ’â~‚³‚¹AƒXƒ^[ƒg‚·‚éŒü‚«‚É–ß‚·
+	//ãƒ­ãƒœãƒƒãƒˆã‚’åœæ­¢ã•ã›ã€ã‚¹ã‚¿ãƒ¼ãƒˆã™ã‚‹å‘ãã«æˆ»ã™
 	mazeRunner.robotPositionInit();
 	
 	/*
-	//Å’ZŒo˜H‚ÌŒvZ Š„‚ÆŠÔ‚ª‚©‚©‚é(”•b)
-	//ˆø”‚ÍÎ‚ß‘–s‚ğ‚·‚é‚©‚µ‚È‚¢‚©
-	//true‚¾‚ÆÎ‚ß‘–s‚ğ‚·‚é
+	//æœ€çŸ­çµŒè·¯ã®è¨ˆç®— å‰²ã¨æ™‚é–“ãŒã‹ã‹ã‚‹(æ•°ç§’)
+	//å¼•æ•°ã¯æ–œã‚èµ°è¡Œã‚’ã™ã‚‹ã‹ã—ãªã„ã‹
+	//trueã ã¨æ–œã‚èµ°è¡Œã‚’ã™ã‚‹
 	agent.calcRunSequence(false);
 	
-	// Œv‘ª‘–s
-	//ƒRƒ}ƒ“ƒhƒŠƒXƒg‚İ‚½‚¢‚È‚â‚Â‚ğæ‚èo‚·
+	// è¨ˆæ¸¬èµ°è¡Œ
+	//ã‚³ãƒãƒ³ãƒ‰ãƒªã‚¹ãƒˆã¿ãŸã„ãªã‚„ã¤ã‚’å–ã‚Šå‡ºã™
 	const OperationList &runSequence = agent.getRunSequence();
-	//Operation‚ğæ“ª‚©‚ç‡”Ô‚ÉÀs‚µ‚Ä‚¢‚­
+	//Operationã‚’å…ˆé ­ã‹ã‚‰é †ç•ªã«å®Ÿè¡Œã—ã¦ã„ã
 	for (size_t i=0;i<runSequence.size();i++) 
 	{
-		//Operation‚ÌÀs‚ªI‚í‚é‚Ü‚Å‘Ò‚Â(nƒ}ƒXi‚ñ‚¾,‰E‚É‹È‚ª‚Á‚½)
+		//Operationã®å®Ÿè¡ŒãŒçµ‚ã‚ã‚‹ã¾ã§å¾…ã¤(nãƒã‚¹é€²ã‚“ã ,å³ã«æ›²ãŒã£ãŸ)
 		while(!operationFinished());
-		//i”Ô–Ú‚Ì‚ğÀs
-		robotMove(runSequence[i]); //robotModeŠÖ”‚ÍOperationŒ^‚ğó‚¯æ‚Á‚Ä‚»‚ê‚ğÀs‚·‚éŠÖ”
+		//iç•ªç›®ã®ã‚’å®Ÿè¡Œ
+		robotMove(runSequence[i]); //robotModeé–¢æ•°ã¯Operationå‹ã‚’å—ã‘å–ã£ã¦ãã‚Œã‚’å®Ÿè¡Œã™ã‚‹é–¢æ•°
 	}
 	*/
 	//fin

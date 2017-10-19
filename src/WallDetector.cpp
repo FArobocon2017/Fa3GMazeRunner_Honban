@@ -52,8 +52,8 @@ int WallDetector::chkRightWall()
 }
 
 
-// senSts[4]	= {左、左前、右前、右}
-// Wall[3]		= {左、正面、右}
+// senSts[4]	= {蟾ｦ縲∝ｷｦ蜑阪∝承蜑阪∝承}
+// Wall[3]		= {蟾ｦ縲∵ｭ｣髱｢縲∝承}
 void WallDetector::getWallData(int *wall)
 {
 	int	senSts[4]={0};
