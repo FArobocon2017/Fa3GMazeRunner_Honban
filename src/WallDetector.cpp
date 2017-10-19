@@ -113,7 +113,7 @@ void WallDetector::getWallData(int *wall)
 		//// 以下、処理 ////
 		// ブザー鳴らす（3秒）
 		usleep(sleeptime);
- 
+
 		// forループ5回でセンサ平均値取得（壁と判定する距離）
 		for (int i = 0; i < counterSenseMax; i++)
 		{
@@ -121,7 +121,7 @@ void WallDetector::getWallData(int *wall)
 			sensor.getSensorSts(tempLight);
 
 			// 標準出力（1回分の値）
-			cout << tempLight[0] << " " <<  tempLight[1] << " " << tempLight[2] << " " << tempLight[3] << endl;
+			cout << tempLight[0] << " " << tempLight[1] << " " << tempLight[2] << " " << tempLight[3] << endl;
 
 			for (int j = 0; j < counterSenseMax; j++)
 			{
