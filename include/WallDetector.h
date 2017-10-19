@@ -19,4 +19,6 @@ public:
 	int chkLeftWall();
 	int chkRightWall();
 	void getWallData(int*);
+
+	void geLightAverage();
 };

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
+#include <stdlib.h>
 #include "../include/Maze.h"
 #include "../include/Agent.h"
 #include "../include/MazeData.h"
@@ -20,7 +21,7 @@ Agent agent(maze);
 //前回のAgentの状態を保存しとく
 Agent::State prevState = Agent::IDLE;
 
-int main()
+int main(int argc, char* argv[])
 {
 	WallDetector wallDetector;
 	Direction nowDir(NORTH);
@@ -28,6 +29,19 @@ int main()
 	MazeRunner mazeRunner;
 	int wall[3] = {0};
 	int prev_State = 0;
+
+	// デバッグ？
+	if (argc >= 2)
+	{
+		string isDebug = argv[1]
+		if (isDebug == "D")
+		{
+			wallDetector.geLightAverage();
+		}
+		// 終了
+		return 0;
+	}
+
 	// 迷路探索開始
 	while(1)
 	{

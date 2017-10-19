@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "../include/WallDetector.h"
 
 using namespace std;
@@ -90,5 +92,46 @@ void WallDetector::getWallData(int *wall)
 	else if(senSts[0] > FL_TH && senSts[1] > L_TH && senSts[2] > R_TH && senSts[3] > FR_TH)
 	{
 		wall[0] = 1;		wall[1] = 1;		wall[2] = 1;
+	}
+
+	// 光センサの取得
+	void WallDetector::geLightAverage()
+	{
+		// 計測回数最大値
+		int counterSenseMax = 5;
+
+		// 計測値を一時格納
+		int tempLight[4] = { 0 };
+
+		// 計測値の平均
+		int aveCloseantLight[4] = { 0 };
+
+		// スリープタイム
+		int sleeptime = 300000;
+
+
+		//// 以下、処理 ////
+		// ブザー鳴らす（3秒）
+		usleep(sleeptime);
+ 
+		// forループ5回でセンサ平均値取得（壁と判定する距離）
+		for (int i = 0; i < counterSenseMax; i++)
+		{
+			// 取得
+			sensor.getSensorSts(tempLight);
+
+			// 標準出力（1回分の値）
+			cout << tempLight[0] << " " <<  tempLight[1] << " " << tempLight[2] << " " << tempLight[3] << endl;
+
+			for (int j = 0; j < counterSenseMax; j++)
+			{
+				aveCloseantLight[j] += tempLight[j] / counterSenseMax;
+			}
+		}
+
+		// 標準出力（平均値）
+		cout << "[ave]" << endl;
+		cout << tempLight[0] << " " << tempLight[1] << " " << tempLight[2] << " " << tempLight[3] << endl;
+		cout << endl;
 	}
 }
