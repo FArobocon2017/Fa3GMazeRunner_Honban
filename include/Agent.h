@@ -87,7 +87,7 @@ public:
 
 	//最終的に走る経路を計算する
 	//Agentの状態がFINISHEDになっている時に実行する
-	void caclRunSequence(bool useDiagonalPath);
+	void calcRunSequence(bool useDiagonalPath);
 	inline const Path &getShortestPath() const {return path.getShortestTimePath();}
 	inline const OperationList &getRunSequence() const { return path.getShortestTimePathOperation(); }
 

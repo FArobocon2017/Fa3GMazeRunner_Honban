@@ -1,13 +1,15 @@
 #include <iostream>
 #include <vector>
 #include <unistd.h>
-#include <stdlib.h>
+
 #include "../include/Maze.h"
 #include "../include/Agent.h"
 #include "../include/MazeData.h"
+#include "../include/MazeRunner.h"
+
+#include "../include/TactSW.h"
 #include "../include/WallDetector.h"
 #include "../include/MicroMouseDriver.h"
-#include "../include/MazeRunner.h"
 
 using namespace std;
 
@@ -21,7 +23,7 @@ Agent agent(maze);
 //前回のAgentの状態を保存しとく
 Agent::State prevState = Agent::IDLE;
 
-int main(int argc, char* argv[])
+int main()
 {
 	WallDetector wallDetector;
 	Direction nowDir(NORTH);
@@ -29,22 +31,37 @@ int main(int argc, char* argv[])
 	MazeRunner mazeRunner;
 	int wall[3] = {0};
 	int prev_State = 0;
+	int loopNum = 0;
 
-	// デバッグ？
-	if (argc >= 2)
+	TactSW tactsw;
+	int tswSts1 = 1;
+	int tswSts2 = 1;
+	int tswSts3 = 1;
+	while(tswSts3)
 	{
-		string isDebug = argv[1]
-		if (isDebug == "D")
+		tswSts1 = tactsw.getTactSwSts1();
+		tswSts2 = tactsw.getTactSwSts2();
+		tswSts3 = tactsw.getTactSwSts3();
+		//cout << "tswSts1" << tswSts1 << endl;
+		//cout << "tswSts2 " << tswSts2 << endl;
+		if(tswSts1 == 0)
 		{
-			wallDetector.geLightAverage();
+			usleep(1000000);
+			wallDetector.getLightAverage();
 		}
-		// 終了
-		return 0;
+		if(tswSts2 == 0)
+		{
+			return 0;
+		}
 	}
-
+	
+	
 	// 迷路探索開始
+	usleep(1000000);
 	while(1)
 	{
+		cout << "loopNum:" << loopNum << endl;
+		
 		//センサから取得した壁情報を入れる
 		wallDetector.getWallData(wall);
 		Direction wallData = mazeRunner.setWallData(wall, nowDir);
@@ -56,8 +73,16 @@ int main(int argc, char* argv[])
 		agent.update(robotPos, wallData);
 
 
-		cout << "robotPos" << static_cast<int16_t>(robotPos.x) << "," <<  static_cast<int16_t>(robotPos.y) << endl;
-		cout << "wallData" << wallData[7] << "" << wallData[6]<< "" << wallData[5]<< "" << wallData[4]<< endl;
+		cout << "robotPos[x,y]:" << static_cast<int16_t>(robotPos.x) << "," <<  static_cast<int16_t>(robotPos.y) << endl;
+		cout << "wall[L,F,R]:"
+			<< wall[0] << " " 
+			<< wall[1] << " " 
+			<< wall[2] << endl;
+		cout << "wallData[N,E,S,W]:" 
+			<< static_cast<int16_t>(wallData.bits.North) << " " 
+			<< static_cast<int16_t>(wallData.bits.East) << " " 
+			<< static_cast<int16_t>(wallData.bits.South) << " " 
+			<< static_cast<int16_t>(wallData.bits.West) << endl;
 		cout << "agent.getState()" << agent.getState() << endl;
 
 		//Agentの状態を確認
@@ -80,6 +105,7 @@ int main(int argc, char* argv[])
 		{
 			agent.forceGotoStart();
 		}
+
 		//Agentの状態が探索中の場合は次に進むべき方向を取得する
 		Direction nextDir = agent.getNextDirection();
 		//nextDirの示す方向に進む
@@ -89,13 +115,22 @@ int main(int argc, char* argv[])
 		
 		nowPos = mazeRunner.setRobotPos(nowPos, nextDir);
 		nowDir = nextDir;
-usleep(100000);
+		//usleep(100000);
+		
+		cout << "nextDir[N,E,S,W]:" 
+			<< static_cast<int16_t>(nextDir.bits.North) << " " 
+			<< static_cast<int16_t>(nextDir.bits.East) << " " 
+			<< static_cast<int16_t>(nextDir.bits.South) << " " 
+			<< static_cast<int16_t>(nextDir.bits.West) << endl;
+
+		cout << endl;
+		loopNum++;
 	}
 	
 	//ロボットを停止させ、スタートする向きに戻す
 	mazeRunner.robotPositionInit();
+	usleep(3000000);
 	
-	/*
 	//最短経路の計算 割と時間がかかる(数秒)
 	//引数は斜め走行をするかしないか
 	//trueだと斜め走行をする
@@ -104,19 +139,23 @@ usleep(100000);
 	// 計測走行
 	//コマンドリストみたいなやつを取り出す
 	const OperationList &runSequence = agent.getRunSequence();
+
 	//Operationを先頭から順番に実行していく
 	for (size_t i=0;i<runSequence.size();i++) 
 	{
 		//Operationの実行が終わるまで待つ(nマス進んだ,右に曲がった)
-		while(!operationFinished());
+		//while(!operationFinished());
+
 		//i番目のを実行
-		robotMove(runSequence[i]); //robotMode関数はOperation型を受け取ってそれを実行する関数
+		cout << "runSequence.size" << runSequence.size() << endl;
+		cout << "runSequence[" << i <<"]" << runSequence[i].op << ","<< static_cast<int16_t>(runSequence[i].n) << endl;
+		mazeRunner.robotMoveSequence(runSequence[i]); //robotMode関数はOperation型を受け取ってそれを実行する関数
 	}
-	*/
+	
 	//fin
 	
 	
-	for(int i=0;i<100;i++)
+	for(int i=0;i<10;i++)
 	{
 		cout << "i:" << i << endl;
 		wallDetector.getWallData(wall);

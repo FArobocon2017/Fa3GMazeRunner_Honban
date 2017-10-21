@@ -9,7 +9,8 @@
 //迷路のゴール座標
 //ゴールとしたい座標を並べる
 //4個でなくてもよい
-#define MAZE_GOAL_LIST { IndexVec(7,7), IndexVec(7,8), IndexVec(8,7), IndexVec(8,8) }
+//#define MAZE_GOAL_LIST {IndexVec(3,7),IndexVec(3,8),IndexVec(4,7),IndexVec(4,8)}
+#define MAZE_GOAL_LIST {IndexVec(0,2), IndexVec(0,3), IndexVec(0,4), IndexVec(0,5)}
 
 
 /****************************************
@@ -24,10 +25,10 @@
 
 //経路のコストを計算するときに使うロボットの走行性能
 //90度曲がるブロックを進むのにかかる時間[s]
-#define TURN90_TIME 	1//0.3
+#define TURN90_TIME 	0.5//0.3
 
 //45度曲がるブロックを進むのにかかる時間[s]
-#define TURN45_TIME 	1//0.2
+#define TURN45_TIME 	0.5//0.2
 
 //加速度[m/s^2]
 #define ACCELERATION 	6.0

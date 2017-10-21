@@ -2,10 +2,12 @@
 
 #include "Sensor.h"
 
-#define FL_TH	300
-#define L_TH		300
-#define R_TH		300
-#define FR_TH	300
+#define FL_TH	1000
+#define L_TH	120
+#define R_TH	140
+#define FR_TH	1000
+
+#define M	150
 
 class WallDetector
 {
@@ -19,6 +21,5 @@ public:
 	int chkLeftWall();
 	int chkRightWall();
 	void getWallData(int*);
-
-	void geLightAverage();
+	void getLightAverage();
 };
