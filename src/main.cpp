@@ -47,7 +47,24 @@ int main()
 		if(tswSts1 == 0)
 		{
 			usleep(1000000);
-			wallDetector.getLightAverage();
+			//wallDetector.getLightAverage();
+			MicroMouseDriver m;
+usleep(1000000);
+m.driveNBlock(1);
+usleep(1000000);
+m.driveNBlock(1);
+usleep(1000000);
+m.turnRight();
+usleep(1000000);
+m.turnLeft();
+usleep(1000000);
+m.turnLeft();
+		//	m.turnLeft();
+			//usleep(1000000);
+		//	m.inverse();
+			//usleep(1000000);
+		//	m.turnRight();
+			//usleep(1000000);
 		}
 		if(tswSts2 == 0)
 		{
@@ -57,7 +74,7 @@ int main()
 	
 	
 	// 迷路探索開始
-	usleep(1000000);
+	usleep(2000000);
 	while(1)
 	{
 		cout << "loopNum:" << loopNum << endl;
@@ -137,6 +154,7 @@ int main()
 	agent.calcRunSequence(false);
 	
 	// 計測走行
+	cout << "Opelation" << endl;
 	//コマンドリストみたいなやつを取り出す
 	const OperationList &runSequence = agent.getRunSequence();
 
@@ -160,7 +178,7 @@ int main()
 		cout << "i:" << i << endl;
 		wallDetector.getWallData(wall);
 		cout << "wall:" << "[" << wall[0] << "," << wall[1] << ","<< wall[2] << "]"<< endl;
-		usleep(100000);
+		usleep(1000000);
 	}
 	return 0;
 }

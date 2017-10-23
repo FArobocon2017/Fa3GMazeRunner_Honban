@@ -4,13 +4,13 @@
  * 迷路に関するパラメータ
  ***************************************/
 //迷路の大きさ
-#define MAZE_SIZE 16
+#define MAZE_SIZE 4	//16
 
 //迷路のゴール座標
 //ゴールとしたい座標を並べる
 //4個でなくてもよい
 //#define MAZE_GOAL_LIST {IndexVec(3,7),IndexVec(3,8),IndexVec(4,7),IndexVec(4,8)}
-#define MAZE_GOAL_LIST {IndexVec(0,2), IndexVec(0,3), IndexVec(0,4), IndexVec(0,5)}
+#define MAZE_GOAL_LIST {IndexVec(0,3)}
 
 
 /****************************************

@@ -4,7 +4,7 @@
 
 #define	STEP_ANG				0.9		//モータが1ステップ辺りに回転する角度
 #define	STEP_SLOW				500		//1秒あたりにモーターに与えるステップ数
-#define	STEP_MIDDLE				500		//1秒あたりにモーターに与えるステップ数
+#define	STEP_MIDDLE				400		//1秒あたりにモーターに与えるステップ数
 #define	STEP_FAST				1500		//1秒あたりにモーターに与えるステップ数
 #define	PI					3.14159	//π
 #define	WHEEL_RADIUS				47		//車輪の直径(mm)
