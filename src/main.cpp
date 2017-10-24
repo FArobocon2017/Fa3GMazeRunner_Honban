@@ -25,14 +25,20 @@ Agent::State prevState = Agent::IDLE;
 
 int main()
 {
+	// 壁情報（東西南北）
 	WallDetector wallDetector;
+	// マウスの現在の進行方向
 	Direction nowDir(NORTH);
+	// マウスの現在位置（X,Y）
 	IndexVec nowPos(0,0);
+	// 座標変換用
 	MazeRunner mazeRunner;
+	// 壁情報（左,前,右）
 	int wall[3] = {0};
-	int prev_State = 0;
+	// メインループ数
 	int loopNum = 0;
-
+	
+	// タクトスイッチ
 	TactSW tactsw;
 	int tswSts1 = 1;
 	int tswSts2 = 1;
@@ -49,21 +55,21 @@ int main()
 			usleep(1000000);
 			//wallDetector.getLightAverage();
 			MicroMouseDriver m;
-usleep(1000000);
-m.driveNBlock(1);
-usleep(1000000);
-m.driveNBlock(1);
-usleep(1000000);
-m.turnRight();
-usleep(1000000);
-m.turnLeft();
-usleep(1000000);
-m.turnLeft();
-		//	m.turnLeft();
+			usleep(1000000);
+			m.driveNBlock(1);
+			usleep(1000000);
+			m.driveNBlock(1);
+			usleep(1000000);
+			m.turnRight();
+			usleep(1000000);
+			m.turnLeft();
+			usleep(1000000);
+			m.turnLeft();
+			//	m.turnLeft();
 			//usleep(1000000);
-		//	m.inverse();
+			//	m.inverse();
 			//usleep(1000000);
-		//	m.turnRight();
+			//	m.turnRight();
 			//usleep(1000000);
 		}
 		if(tswSts2 == 0)
@@ -79,8 +85,9 @@ m.turnLeft();
 	{
 		cout << "loopNum:" << loopNum << endl;
 		
-		//センサから取得した壁情報を入れる
+		// センサから取得した壁情報を入れる
 		wallDetector.getWallData(wall);
+		// 壁情報変換（左前右　→　東西南北）
 		Direction wallData = mazeRunner.setWallData(wall, nowDir);
 		
 		//ロボットの座標を取得
@@ -89,7 +96,7 @@ m.turnLeft();
 		//壁情報を更新 次に進むべき方向を計算
 		agent.update(robotPos, wallData);
 
-
+		// デバッグ用
 		cout << "robotPos[x,y]:" << static_cast<int16_t>(robotPos.x) << "," <<  static_cast<int16_t>(robotPos.y) << endl;
 		cout << "wall[L,F,R]:"
 			<< wall[0] << " " 
@@ -110,11 +117,11 @@ m.turnLeft();
 		}
 		//ゴールにたどり着いた瞬間に一度だけmazeのバックアップをとる
 		//Mazeクラスはoperator=が定義してあるからa = bでコピーできる
-		if (prev_State == Agent::SEARCHING_NOT_GOAL && agent.getState() == Agent::SEARCHING_REACHED_GOAL) 
+		if (prevState == Agent::SEARCHING_NOT_GOAL && agent.getState() == Agent::SEARCHING_REACHED_GOAL) 
 		{
 			maze_backup = maze;
 		}
-		prev_State = agent.getState();
+		prevState = agent.getState();
 		//一度はゴールにたどり着き、少なくともゴールできる状態で追加の探索をしているが、
 		//もう時間が無いから探索をうちやめてスタート地点に戻る
 		//if (isTimeOut() && agent.getState() == Agent::SEARCHING_REACHED_GOAL)
@@ -172,7 +179,7 @@ m.turnLeft();
 	
 	//fin
 	
-	
+	// センサ機能確認用
 	for(int i=0;i<10;i++)
 	{
 		cout << "i:" << i << endl;
