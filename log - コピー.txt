@@ -1,0 +1,97 @@
+loopNum:0
+robotPos[x,y]:0,0
+wall[L,F,R]:1 0 1
+wallData[N,E,S,W]:0 1 0 1
+agent.getState()1
+driveN
+rotationAng360
+rotatioNum1
+wheelCircumference147.655
+sleepTime147.655
+nextDir[N,E,S,W]:1 0 0 0
+
+loopNum:1
+robotPos[x,y]:0,1
+wall[L,F,R]:1 0 0
+wallData[N,E,S,W]:0 0 0 1
+agent.getState()1
+driveN
+rotationAng360
+rotatioNum1
+wheelCircumference147.655
+sleepTime147.655
+nextDir[N,E,S,W]:1 0 0 0
+
+loopNum:2
+robotPos[x,y]:0,2
+wall[L,F,R]:1 0 0
+wallData[N,E,S,W]:0 0 0 1
+agent.getState()1
+driveN
+rotationAng360
+rotatioNum1
+wheelCircumference147.655
+sleepTime147.655
+nextDir[N,E,S,W]:1 0 0 0
+
+loopNum:3
+robotPos[x,y]:0,3
+wall[L,F,R]:1 0 0
+wallData[N,E,S,W]:0 0 0 1
+agent.getState()3
+inv
+rotationAng360
+rotatioNum1
+wheelCircumference147.655
+sleepTime147.655
+nextDir[N,E,S,W]:0 0 1 0
+
+loopNum:4
+robotPos[x,y]:0,2
+wall[L,F,R]:0 0 1
+wallData[N,E,S,W]:0 0 0 1
+agent.getState()3
+rotationAng360
+rotatioNum1
+wheelCircumference147.655
+sleepTime147.655
+nextDir[N,E,S,W]:0 0 1 0
+
+loopNum:5
+robotPos[x,y]:0,1
+wall[L,F,R]:0 1 0
+wallData[N,E,S,W]:0 0 1 0
+agent.getState()3
+rotationAng360
+rotatioNum1
+wheelCircumference147.655
+sleepTime147.655
+nextDir[N,E,S,W]:0 0 1 0
+
+loopNum:6
+robotPos[x,y]:0,0
+wall[L,F,R]:0 1 0
+wallData[N,E,S,W]:0 0 1 0
+agent.getState()4
+Opelation
+i:0
+wall:[1,0,1]
+i:1
+wall:[0,0,0]
+i:2
+wall:[1,0,0]
+i:3
+wall:[1,0,0]
+i:4
+wall:[1,0,0]
+i:5
+wall:[1,0,0]
+i:6
+wall:[1,0,0]
+i:7
+wall:[1,0,0]
+i:8
+wall:[0,0,0]
+i:9
+wall:[0,0,0]
+pi@raspberrypi:~/fa $ 
