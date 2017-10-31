@@ -59,6 +59,11 @@ public:
 	//状態をIDLEにし、path関連を全てクリアする
 	void reset();
 
+	Maze getCurrentMaze() const
+	{
+		return *maze;
+	}
+
 	//状態を更新する
 	//cur:今の座標
 	//cur_wall:今の座標における壁情報(Done bitは無視される)
