@@ -210,6 +210,7 @@ int thetaTolerance = 5;
 // マス内での補正を実施する
 void adjustMove(int x, int y, int theta)
 {
+	MazeRunner mRunner;
 	// 分岐（x,y,thetaが許容範囲内)
 	if(abs(x) < xTolerance && abs(y) < yTolerance && abs(theta) < thetaTolerance)
 	{
@@ -227,14 +228,14 @@ void adjustMove(int x, int y, int theta)
 	/// ①後ろ方向に移動
 	double moveBack = (double)x / cos((double)theta); // 移動距離
 
-	// moveBack(cm? mm?)分だけ後ろに下がる（実装済）
+	mRunner.driveMM(-moveBack); // moveBack(cm? mm?)分だけ後ろに下がる（実装済）
 
 	/// ②回転
-	// theta分だけ逆回転（実装済）
+	mRunner.turnNAngle(-theta); // theta分だけ逆回転（実装済）
 	
 	/// ③前進
 	double moveForward = (double)y - (moveBack * cos(theta));		
-	// moveForward(cm? mm?)分だけ前に進む（実装済）
+	mRunner.driveMM(moveForward);  // moveForward(cm? mm?)分だけ前に進む（実装済）
 
 	return; // 不要
 }
