@@ -1,89 +1,232 @@
 #include <iostream>
+#include <unistd.h>
 #include "../include/MazeRunner.h"
 #include "../include/MicroMouseDriver.h"
+#include "../include/TactSW.h"
+#include "../include/Agent.h"
+#include "../include/WallDetector.h"
 
 using namespace std;
 
-// Int[3]→Direction
-Direction MazeRunner::setWallData(int* wall, Direction nowDir)
-{
-	Direction dir;
-	
-	if(nowDir.bits.North)
+namespace{
+	// これどこか他の場所に定義してほしい
+	// Int[3]→Direction
+	Direction determineDirection(int* wall, Direction nowDir)
 	{
-		if(wall[0])
+		Direction dir;
+		
+		if(nowDir.bits.North)
 		{
-			dir.bits.West = 1;
-			dir.bits.DoneWest = 1;
+			if(wall[0])
+			{
+				dir.bits.West = 1;
+				dir.bits.DoneWest = 1;
+			}
+			if(wall[1])
+			{
+				dir.bits.North = 1;
+				dir.bits.DoneNorth = 1;
+			}
+			if(wall[2])
+			{
+				dir.bits.East = 1;
+				dir.bits.DoneEast = 1;
+			}
 		}
-		if(wall[1])
+		else if(nowDir.bits.East)
 		{
-			dir.bits.North = 1;
-			dir.bits.DoneNorth = 1;
+			if(wall[0])
+			{
+				dir.bits.North = 1;
+				dir.bits.DoneNorth = 1;
+			}
+			if(wall[1])
+			{
+				dir.bits.East = 1;
+				dir.bits.DoneEast = 1;
+			}
+			if(wall[2])
+			{
+				dir.bits.South = 1;
+				dir.bits.DoneSouth = 1;
+			}
 		}
-		if(wall[2])
+		else if(nowDir.bits.South)
 		{
-			dir.bits.East = 1;
-			dir.bits.DoneEast = 1;
+			if(wall[0])
+			{
+				dir.bits.East = 1;
+				dir.bits.DoneEast = 1;
+			}
+			if(wall[1])
+			{
+				dir.bits.South = 1;
+				dir.bits.DoneSouth = 1;
+			}
+			if(wall[2])
+			{
+				dir.bits.West = 1;
+				dir.bits.DoneWest = 1;
+			}
 		}
+		else if(nowDir.bits.West)
+		{
+			if(wall[0])
+			{
+				dir.bits.South = 1;
+				dir.bits.DoneSouth = 1;
+			}
+			if(wall[1])
+			{
+				dir.bits.West = 1;
+				dir.bits.DoneWest = 1;
+			}
+			if(wall[2])
+			{
+				dir.bits.North = 1;
+				dir.bits.DoneNorth = 1;
+			}
+		}
+		
+		return dir;
 	}
-	else if(nowDir.bits.East)
-	{
-		if(wall[0])
-		{
-			dir.bits.North = 1;
-			dir.bits.DoneNorth = 1;
-		}
-		if(wall[1])
-		{
-			dir.bits.East = 1;
-			dir.bits.DoneEast = 1;
-		}
-		if(wall[2])
-		{
-			dir.bits.South = 1;
-			dir.bits.DoneSouth = 1;
-		}
-	}
-	else if(nowDir.bits.South)
-	{
-		if(wall[0])
-		{
-			dir.bits.East = 1;
-			dir.bits.DoneEast = 1;
-		}
-		if(wall[1])
-		{
-			dir.bits.South = 1;
-			dir.bits.DoneSouth = 1;
-		}
-		if(wall[2])
-		{
-			dir.bits.West = 1;
-			dir.bits.DoneWest = 1;
-		}
-	}
-	else if(nowDir.bits.West)
-	{
-		if(wall[0])
-		{
-			dir.bits.South = 1;
-			dir.bits.DoneSouth = 1;
-		}
-		if(wall[1])
-		{
-			dir.bits.West = 1;
-			dir.bits.DoneWest = 1;
-		}
-		if(wall[2])
-		{
-			dir.bits.North = 1;
-			dir.bits.DoneNorth = 1;
-		}
-	}
-	
-	return dir;
 }
+
+void MazeRunner::calibration()
+{
+	// タクトスイッチ
+	TactSW tactsw;
+	int tswSts1 = 1;
+	int tswSts2 = 1;
+	int tswSts3 = 1;
+	while(tswSts3)
+	{
+		tswSts1 = tactsw.getTactSwSts1();
+		tswSts2 = tactsw.getTactSwSts2();
+		tswSts3 = tactsw.getTactSwSts3();
+		//cout << "tswSts1" << tswSts1 << endl;
+		//cout << "tswSts2 " << tswSts2 << endl;
+		if(tswSts1 == 0)
+		{
+			usleep(1000000);
+			//wallDetector.getLightAverage();
+			MicroMouseDriver m;
+			usleep(1000000);
+			m.driveNBlock(1);
+			usleep(1000000);
+			m.driveNBlock(1);
+			usleep(1000000);
+			m.turnRight();
+			usleep(1000000);
+			m.turnLeft();
+			usleep(1000000);
+			m.turnLeft();
+			//	m.turnLeft();
+			//usleep(1000000);
+			//	m.inverse();
+			//usleep(1000000);
+			//	m.turnRight();
+			//usleep(1000000);
+		}
+		if(tswSts2 == 0)
+		{
+			return ;
+		}
+	}
+}
+
+void MazeRunner::exploreMaze(Agent& agent)
+{
+	// メインループ数
+	int loopNum = 0;
+
+	// マウスの現在位置（X,Y）
+	IndexVec nowPos(0,0);
+
+	//前回のAgentの状態を保存しとく
+	Agent::State prevState = Agent::IDLE;
+
+	while(1)
+	{
+		cout << "loopNum:" << loopNum << endl;
+		
+		// 壁情報（左,前,右）
+		int wall[3] = {0};
+
+		// 壁情報（東西南北）
+		WallDetector wallDetector;
+
+		// マウスの現在の進行方向
+		Direction nowDir(NORTH);
+
+		// センサから取得した壁情報を入れる
+		wallDetector.getWallData(wall);
+		// 壁情報変換（左前右　→　東西南北）
+		Direction wallData = ::determineDirection(wall, nowDir);
+		
+		//ロボットの座標を取得
+		IndexVec robotPos = nowPos;
+		
+		//壁情報を更新 次に進むべき方向を計算
+		agent.update(robotPos, wallData);
+
+		// デバッグ用
+		cout << "robotPos[x,y]:" << static_cast<int16_t>(robotPos.x) << "," <<  static_cast<int16_t>(robotPos.y) << endl;
+		cout << "wall[L,F,R]:"
+			<< wall[0] << " " 
+			<< wall[1] << " " 
+			<< wall[2] << endl;
+		cout << "wallData[N,E,S,W]:" 
+			<< static_cast<int16_t>(wallData.bits.North) << " " 
+			<< static_cast<int16_t>(wallData.bits.East) << " " 
+			<< static_cast<int16_t>(wallData.bits.South) << " " 
+			<< static_cast<int16_t>(wallData.bits.West) << endl;
+		cout << "agent.getState()" << agent.getState() << endl;
+
+		//Agentの状態を確認
+		//FINISHEDになったら計測走行にうつる
+		if (agent.getState() == Agent::FINISHED)
+		{
+			break;
+		}
+		//ゴールにたどり着いた瞬間に一度だけmazeのバックアップをとる
+		//Mazeクラスはoperator=が定義してあるからa = bでコピーできる
+		if (prevState == Agent::SEARCHING_NOT_GOAL && agent.getState() == Agent::SEARCHING_REACHED_GOAL) 
+		{
+			maze_backup = agent.getCurrentMaze();
+		}
+		prevState = agent.getState();
+		//一度はゴールにたどり着き、少なくともゴールできる状態で追加の探索をしているが、
+		//もう時間が無いから探索をうちやめてスタート地点に戻る
+		//if (isTimeOut() && agent.getState() == Agent::SEARCHING_REACHED_GOAL)
+		if (agent.getState() == Agent::SEARCHING_REACHED_GOAL)
+		{
+			agent.forceGotoStart();
+		}
+
+		//Agentの状態が探索中の場合は次に進むべき方向を取得する
+		Direction nextDir = agent.getNextDirection();
+		//nextDirの示す方向に進む
+		//突然今と180度逆の方向を示してくる場合もあるので注意
+		//止まらないと壁にぶつかる
+		this->robotMove(nowDir, nextDir);  //robotMove関数はDirection型を受け取ってロボットをそっちに動かす関数
+		
+		nowPos = this->setRobotPos(nowPos, nextDir);
+		nowDir = nextDir;
+		//usleep(100000);
+		
+		cout << "nextDir[N,E,S,W]:" 
+			<< static_cast<int16_t>(nextDir.bits.North) << " " 
+			<< static_cast<int16_t>(nextDir.bits.East) << " " 
+			<< static_cast<int16_t>(nextDir.bits.South) << " " 
+			<< static_cast<int16_t>(nextDir.bits.West) << endl;
+
+		cout << endl;
+		loopNum++;
+	}
+}
+
+
 
 
 IndexVec MazeRunner::setRobotPos(IndexVec nowPos, Direction nextDir)
