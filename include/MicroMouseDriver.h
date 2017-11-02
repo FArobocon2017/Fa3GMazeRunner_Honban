@@ -3,7 +3,7 @@
 #include "Motor.h"
 
 #define	STEP_ANG				0.9		//モータが1ステップ辺りに回転する角度
-#define	STEP_SLOW				500		//1秒あたりにモーターに与えるステップ数
+#define	STEP_SLOW				200		//1秒あたりにモーターに与えるステップ数
 #define	STEP_MIDDLE				400		//1秒あたりにモーターに与えるステップ数
 #define	STEP_FAST				1500		//1秒あたりにモーターに与えるステップ数
 #define	PI					3.14159	//π
@@ -11,11 +11,13 @@
 #define	DEGREE					360		//360°
 #define	BLOCK					180		//1ブロックの大きさ(mm)
 #define	WHEEL_AXLE				95		//車軸の長さ(mm)
+#define	RADIAN_TO_ANG				57.2958		
+#define	ANG_TO_RADIAN				0.0174		
 
 class MicroMouseDriver
 {
 	Motor motor;
-	int calculateSleepTime(int stepNum);
+	int calculateSleepTime(int distance, int stepNum);
 	int calculateTurnSleepTime(int turnDegree, int stepNum);
 	
 public:
@@ -25,9 +27,14 @@ public:
 	void stop();
 	void driveNBlock(int N);
 	void riverseNBlock(int N);
+	void driveMM(int distance);
 	void spinLeft();
 	void spinRight();
 	void inverse();
+	void turnNAngle(int angle);
 	void turnLeft();
 	void turnRight();
+	void slideMM(int distance);
+	void driveMM(int distance);
+	void turnNAngle(int angle);
 };
