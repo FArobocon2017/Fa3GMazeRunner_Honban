@@ -21,7 +21,15 @@ int main()
 {
 	// 壁情報（東西南北）
 	WallDetector wallDetector;
-	
+
+	// 補正走行
+	int x, y, theta;
+	adjustMove(x, y, theta);
+		
+		// マウスの現在の進行方向
+	Direction nowDir(NORTH);
+	// マウスの現在位置（X,Y）
+	IndexVec nowPos(0,0);
 	// 座標変換用
 	MazeRunner mazeRunner;
 	
@@ -70,4 +78,47 @@ int main()
 		usleep(1000000);
 	}
 	return 0;
+}
+
+
+
+/// 必要な定数 ///
+
+// 許容範囲内
+int xTolerance = 10;
+int yTolerance = 10;
+int thetaTolerance = 5;
+
+
+// マス内での補正を実施する
+void adjustMove(int x, int y, int theta)
+{
+	MazeRunner mRunner;
+	// 分岐（x,y,thetaが許容範囲内)
+	if(abs(x) < xTolerance && abs(y) < yTolerance && abs(theta) < thetaTolerance)
+	{
+		return;	 // 何もしない
+	}
+	
+	// 分岐(X方向ずれあり、角度ずれなし)
+	if (abs(x) > xTolerance && abs(theta) < thetaTolerance)
+	{
+		// 一時的な修正（2回目以降に後に記述の修正を実施）（依頼済）
+		return;
+	}
+
+	// 他のパターン（前に詰まりそうで、後ろ側に空間があるパタン）
+	/// ①後ろ方向に移動
+	double moveBack = (double)x / cos((double)theta); // 移動距離
+
+	mRunner.driveMM(-moveBack); // moveBack(cm? mm?)分だけ後ろに下がる（実装済）
+
+	/// ②回転
+	mRunner.turnNAngle(-theta); // theta分だけ逆回転（実装済）
+	
+	/// ③前進
+	double moveForward = (double)y - (moveBack * cos(theta));		
+	mRunner.driveMM(moveForward);  // moveForward(cm? mm?)分だけ前に進む（実装済）
+
+	return; // 不要
 }
