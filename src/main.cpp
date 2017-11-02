@@ -21,12 +21,8 @@ int main()
 {
 	// 壁情報（東西南北）
 	WallDetector wallDetector;
-
-	// 補正走行
-	int x, y, theta;
-	adjustMove(x, y, theta);
 		
-		// マウスの現在の進行方向
+	// マウスの現在の進行方向
 	Direction nowDir(NORTH);
 	// マウスの現在位置（X,Y）
 	IndexVec nowPos(0,0);
@@ -78,51 +74,4 @@ int main()
 		usleep(1000000);
 	}
 	return 0;
-}
-
-
-
-/// 必要な定数 ///
-
-// 許容範囲内
-int xTolerance = 10;
-int yTolerance = 10;
-int thetaTolerance = 5;
-
-
-// マス内での補正を実施する
-void adjustMove(int x, int y, int degTheta)
-{
-	// 変数定義
-	MicroMouseDriver mRunner; // ドライバ
-						
-	// 角度をラジアンに変換
-	double radTheta = (degTheta * PI) / 180.0;
-	
-	// 分岐（x,y,degThetaが許容範囲内)
-	if(abs(x) < xTolerance && abs(y) < yTolerance && abs(degTheta) < thetaTolerance)
-	{
-		return;	 // 何もしない
-	}
-	
-	// 分岐(X方向ずれあり、角度ずれなし)
-	if (abs(x) > xTolerance && abs(degTheta) < thetaTolerance)
-	{
-		mRunner.slideMM(-x); // 車線変更
-		return;
-	}
-
-	// 他のパターン（前に詰まりそうで、後ろ側に空間があるパタン）
-	/// ①後ろ方向に移動
-	double moveBack = (double)x / cos(radTheta); // 移動距離
-	mRunner.driveMM(-moveBack); // moveBack(mm)分だけ後ろに下がる
-
-	/// ②回転
-	mRunner.turnNAngle(-degTheta); // degTheta分だけ逆回転（実装済）
-	
-	/// ③前進
-	double moveForward = (double)y - (moveBack * cos(radTheta));
-	mRunner.driveMM(moveForward);  // moveForward(cm? mm?)分だけ前に進む
-
-	return; // 不要
 }

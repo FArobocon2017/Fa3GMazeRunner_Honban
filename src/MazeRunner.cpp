@@ -146,6 +146,9 @@ void MazeRunner::exploreMaze(Agent& agent)
 	//前回のAgentの状態を保存しとく
 	Agent::State prevState = Agent::IDLE;
 
+	// マス原点からの誤差情報
+	int x, y, theta = { 0 };
+
 	while(1)
 	{
 		cout << "loopNum:" << loopNum << endl;
@@ -158,6 +161,11 @@ void MazeRunner::exploreMaze(Agent& agent)
 
 		// マウスの現在の進行方向
 		Direction nowDir(NORTH);
+
+		// 誤差情報の取得（カメラ機能使用）
+
+		// 位置補正
+		this.adjustMove(x, y, theta);
 
 		// センサから取得した壁情報を入れる
 		wallDetector.getWallData(wall);
@@ -392,4 +400,48 @@ void MazeRunner::robotMoveSequence(Operation runSequence)
 		default:
 			break;
 	}
+}
+
+
+/// 必要な定数 ///
+
+// 許容範囲内
+int xTolerance = 10;
+int yTolerance = 10;
+int thetaTolerance = 5;
+
+void MazeRunner::adjustMove(int x, int y, int degTheta)
+{
+	// 変数定義
+	MicroMouseDriver mRunner; // ドライバ
+
+	 // 角度をラジアンに変換
+	double radTheta = (degTheta * PI) / 180.0;
+
+	// 分岐（x,y,degThetaが許容範囲内)
+	if (abs(x) < xTolerance && abs(y) < yTolerance && abs(degTheta) < thetaTolerance)
+	{
+		return;	 // 何もしない
+	}
+
+	// 分岐(X方向ずれあり、角度ずれなし)
+	if (abs(x) > xTolerance && abs(degTheta) < thetaTolerance)
+	{
+		mRunner.slideMM(-x); // 車線変更
+		return;
+	}
+
+	// 他のパターン（前に詰まりそうで、後ろ側に空間があるパタン）
+	/// ①後ろ方向に移動
+	double moveBack = (double)x / cos(radTheta); // 移動距離
+	mRunner.driveMM(-moveBack); // moveBack(mm)分だけ後ろに下がる
+
+	/// ②回転
+	mRunner.turnNAngle(-degTheta); // degTheta分だけ逆回転（実装済）
+
+    /// ③前進
+	double moveForward = (double)y - (moveBack * cos(radTheta));
+	mRunner.driveMM(moveForward);  // moveForward(mm)分だけ前に進む
+
+	return; // 不要
 }
