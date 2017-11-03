@@ -1,5 +1,8 @@
 #include <iostream>
 #include <unistd.h>
+#include <opencv2/opencv.hpp>
+
+#include "../include/RaspiCam.h"
 #include "../include/MazeRunner.h"
 #include "../include/MicroMouseDriver.h"
 #include "../include/TactSW.h"
@@ -92,7 +95,7 @@ namespace{
 	}
 }
 
-void MazeRunner::calibration()
+bool MazeRunner::calibration()
 {
 	// タクトスイッチ
 	TactSW tactsw;
@@ -130,13 +133,17 @@ void MazeRunner::calibration()
 		}
 		if(tswSts2 == 0)
 		{
-			return ;
+			return false;
 		}
 	}
+	return true;
 }
 
 void MazeRunner::exploreMaze(Agent& agent)
 {
+	EstimatedErrors mouseErr;
+	RaspiCam raspiCam;
+	raspiCam.open();
 	// メインループ数
 	int loopNum = 0;
 
@@ -152,6 +159,8 @@ void MazeRunner::exploreMaze(Agent& agent)
 		
 		// 壁情報（左,前,右）
 		int wall[3] = {0};
+
+		raspiCam.getWallData(wall, &mouseErr);
 
 		// 壁情報（東西南北）
 		WallDetector wallDetector;
