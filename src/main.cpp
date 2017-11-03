@@ -30,7 +30,10 @@ int main()
 	MazeRunner mazeRunner;
 	
 	// キャリブレーション実施
-	mazeRunner.calibration();
+	if(!mazeRunner.calibration())
+	{
+		return;
+	}
 
 	// 迷路探索開始
 	usleep(2000000);
