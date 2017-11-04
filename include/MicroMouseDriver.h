@@ -2,36 +2,39 @@
 
 #include "Motor.h"
 
-#define	STEP_ANG				0.9		//ãƒ¢ãƒ¼ã‚¿ãŒ1ã‚¹ãƒ†ãƒƒãƒ—è¾ºã‚Šã«å›è»¢ã™ã‚‹è§’åº¦
-#define	STEP_SLOW				200		//1ç§’ã‚ãŸã‚Šã«ãƒ¢ãƒ¼ã‚¿ãƒ¼ã«ä¸ãˆã‚‹ã‚¹ãƒ†ãƒƒãƒ—æ•°
-#define	STEP_MIDDLE				400		//1ç§’ã‚ãŸã‚Šã«ãƒ¢ãƒ¼ã‚¿ãƒ¼ã«ä¸ãˆã‚‹ã‚¹ãƒ†ãƒƒãƒ—æ•°
-#define	STEP_FAST				1500		//1ç§’ã‚ãŸã‚Šã«ãƒ¢ãƒ¼ã‚¿ãƒ¼ã«ä¸ãˆã‚‹ã‚¹ãƒ†ãƒƒãƒ—æ•°
-#define	PI					3.14159	//Ï€
-#define	WHEEL_RADIUS				47		//è»Šè¼ªã®ç›´å¾„(mm)
-#define	DEGREE					360		//360Â°
-#define	BLOCK					180		//1ãƒ–ãƒ­ãƒƒã‚¯ã®å¤§ãã•(mm)
-#define	WHEEL_AXLE				95		//è»Šè»¸ã®é•·ã•(mm)
+#define	STEP_ANG				0.9		//ƒ‚[ƒ^‚ª1ƒXƒeƒbƒv•Ó‚è‚É‰ñ“]‚·‚éŠp“x
+#define	STEP_SLOW				200		//1•b‚ ‚½‚è‚Éƒ‚[ƒ^[‚É—^‚¦‚éƒXƒeƒbƒv”
+#define	STEP_MIDDLE				400		//1•b‚ ‚½‚è‚Éƒ‚[ƒ^[‚É—^‚¦‚éƒXƒeƒbƒv”
+#define	STEP_FAST				1500		//1•b‚ ‚½‚è‚Éƒ‚[ƒ^[‚É—^‚¦‚éƒXƒeƒbƒv”
+#define	PI					    3.14159	//ƒÎ
+#define	WHEEL_RADIUS				47		//Ô—Ö‚Ì’¼Œa(mm)
+#define	DEGREE					360		//360‹
+#define	BLOCK					180		//1ƒuƒƒbƒN‚Ì‘å‚«‚³(mm)
+#define	WHEEL_AXLE				95		//Ô²‚Ì’·‚³(mm)
 #define	RADIAN_TO_ANG				57.2958		
 #define	ANG_TO_RADIAN				0.0174		
+#define	HOSEI5					5		
+#define	HOSEI10					10		
+#define	HOSEI20					20		
+#define	HOSEI30					30		
+#define	HOSEI50					50	
 
 class MicroMouseDriver
 {
 	Motor motor;
 	int calculateSleepTime(int distance, int stepNum);
 	int calculateTurnSleepTime(int turnDegree, int stepNum);
-	
+
 public:
-	MicroMouseDriver(){};
-	~MicroMouseDriver(){};
-	
+	MicroMouseDriver() {};
+	~MicroMouseDriver() {};
+
 	void stop();
 	void driveNBlock(int N);
 	void riverseNBlock(int N);
-	void driveMM(int distance);
 	void spinLeft();
 	void spinRight();
 	void inverse();
-	void turnNAngle(int angle);
 	void turnLeft();
 	void turnRight();
 	void slideMM(int distance);

@@ -1,8 +1,8 @@
 CC	= g++
-CFLAGS	= -std=c++14 -O2 -MMD -MP -Wall
-LDFLAGS	= -lpthread
+CFLAGS	= -std=c++14 -O2 -MMD -MP -DNDEBUG
+LDFLAGS	= `pkg-config --libs opencv` -lraspicam -lraspicam_cv -lpthread
 LIBS	=
-INCLUDE	= -I ./include
+INCLUDE	= `pkg-config --cflag opencv` -I ./include
 SRC_DIR	= ./src
 OBJ_DIR	= ./build
 SOURCES	= $(shell ls $(SRC_DIR)/*.cpp)

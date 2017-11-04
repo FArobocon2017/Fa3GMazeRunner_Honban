@@ -1,4 +1,5 @@
 #include <vector>
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -56,12 +57,15 @@ RaspiCam::~RaspiCam()
 // Camera Open
 void RaspiCam::open()
 {
+	Camera.release();
 	// Set camera params
 	//Camera.set(CV_CAP_PROP_FPS, 60);
 	Camera.set(CV_CAP_PROP_FORMAT, CV_8UC3);
 	Camera.set(CV_CAP_PROP_FRAME_WIDTH, imgWidth);
 	Camera.set(CV_CAP_PROP_FRAME_HEIGHT, imgHeight);
-
+	Camera.set(CV_CAP_PROP_GAIN, 20);
+	//Camera.set(CV_CAP_PROP_EXPOSURE, 50);
+	
 	// Open camera
 	if (!Camera.open())
 	{
@@ -123,7 +127,7 @@ void RaspiCam::createTrainImg(int pattern)
 	cv::cvtColor(capImg, hsvImg, CV_BGR2HSV);
 
 	// Red Light filter
-	cv::inRange(hsvImg, cv::Scalar(150, 70, 70), cv::Scalar(190, 255, 255), maskImg);
+	cv::inRange(hsvImg, cv::Scalar(150, 60, 70), cv::Scalar(190, 255, 255), maskImg);
 
 	// Morphology(Opening)
 	morphologyEx(maskImg, morphoImg, cv::MORPH_OPEN, cv::Mat(3, 3, CV_8UC1), cv::Point(-1, -1), 3, cv::BORDER_REFLECT);
@@ -153,6 +157,10 @@ void RaspiCam::createTrainImg(int pattern)
 		cv::imwrite(fileName.str(), cutImg);
 		cout << "writeImg:" << fileName.str() << endl;
 	}
+	cv::imwrite("./Img/capImg.jpg", capImg);
+	cv::imwrite("./Img/hsvImg.jpg", hsvImg);
+	cv::imwrite("./Img/maskImg.jpg", maskImg);
+	cv::imwrite("./Img/morphoImg.jpg", morphoImg);
 }
 
 
@@ -194,7 +202,7 @@ int RaspiCam::detectCorner(cv::Mat inImg, cv::Mat trainImg, cv::Point& retPt)
 	{
 		return -1;
 	}
-	return 1;
+	return maxScore;
 }
 
 
@@ -281,7 +289,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	// Capture
 	Camera.grab();
 	Camera.retrieve(srcImg);
-
+	
 	// Flip
 	cv::flip(srcImg, srcImg, -1);
 
@@ -290,14 +298,16 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 
 	// Red Light filter
 	cv::inRange(hsvImg, cv::Scalar(150, 70, 70), cv::Scalar(190, 255, 255), maskImg);
-
+	
 	// Morphology(Opening)
 	morphologyEx(maskImg, morphoImg, cv::MORPH_OPEN, cv::Mat(3, 3, CV_8UC1), cv::Point(-1, -1), 3, cv::BORDER_REFLECT);
+	cout << "morpho" << endl;
 	
 	// ROI
 	cv::Mat frontRoi = morphoImg(frontProcRect);
 	cv::Mat leftRoi  = morphoImg(leftProcRect);
 	cv::Mat rightRoi = morphoImg(rightProcRect);
+	cout << "Roi" << endl;
 
 	// Calc Wall Center
 	frontWallArea	= calcCenter(frontRoi, frontWallCenter);
@@ -309,7 +319,10 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	if(leftWallArea  >= correctLeftWallArea) { wall[0] = 1; }
 	if(frontWallArea >= correctFrontWallArea){ wall[1] = 1; }
 	if(rightWallArea >= correctRightWallArea){ wall[2] = 1; }
-
+	cout << "Roi" << endl;
+	cout << "frontWallArea" << frontWallArea << endl;
+	cout << "leftWallArea" << leftWallArea << endl;
+	cout << "rightWallArea" <<rightWallArea<< endl;
 	// Estimate Position & Rotation
 	cv::Point roiPt(0,0);
 	int minX = 999999;
@@ -318,14 +331,21 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	int maxY = 0;
 	cv::Point lineSt(0,0);
 	cv::Point lineEd(0,0);
-	if( (wall[0]==1 && wall[1]==0 && wall[2]==0) ||
+	if( wall[0]==0 && wall[1]==0 && wall[2]==0)
+	{
+		// no action
+	}
+	else if( (wall[0]==1 && wall[1]==0 && wall[2]==0) ||
 	    (wall[0]==0 && wall[1]==1 && wall[2]==0) ||
 	    (wall[0]==0 && wall[1]==0 && wall[2]==1) )
 	{
+		cout << "wall 1" << endl;
 		if(wall[0]==1)
 		{
+			cout << "wall 2" << endl;
 			if(leftWallCenter.x-20 > 0)
 			{
+
 				roiPt.x = leftWallCenter.x-20;
 			}
 			if(leftWallCenter.y-20 > 0)
@@ -358,6 +378,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 		}
 		else if(wall[1]==1)
 		{
+			cout << "wall 3" << endl;
 			if(frontWallCenter.x-20 > 0)
 			{
 				roiPt.x = frontWallCenter.x-20;
@@ -367,7 +388,9 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 				roiPt.y = frontWallCenter.y-20;
 			}
 			cv::Mat roi(morphoImg, cv::Rect(roiPt.x, roiPt.y, 40, 40));
+			cout << "wall1 roi" << endl;
 			thinning(roi, thinImg);
+			cout << "wall1 thin" << endl;
 			for(int y=0; y<thinImg.rows; y++)
 			{
 				for(int x=0; x<thinImg.cols; x++)
@@ -384,6 +407,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 					}
 				}
 			}
+			cout << "wall2" << endl;
 			double degree = atan2(lineEd.y - lineSt.y, lineEd.x - lineSt.x) * (180.0/M_PI);
 			
 			mouseErr->x = frontWallCenter.x - correctFrontWallMidPt.x;
@@ -392,6 +416,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 		}
 		else if(wall[2]==1)
 		{
+			cout << "wall 4" << endl;
 			if(rightWallCenter.x+20 < morphoImg.cols)
 			{
 				roiPt.x = rightWallCenter.x-20;
@@ -427,6 +452,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	}
 	else if( wall[0]==1 && wall[1]==1 && wall[2]==1 )
 	{
+		cout << "wall 5" << endl;
 		vector<cv::Point2f> src, dst;
 		src.push_back(cv::Point2f(leftWallCenter.x, leftWallCenter.y));
 		src.push_back(cv::Point2f(frontWallCenter.x, frontWallCenter.y));
@@ -449,6 +475,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	}
 	else if( wall[1] != 1 )
 	{
+		cout << "wall 6" << endl;
 		if(leftWallCenter.x-20 > 0)
 		{
 			roiPt.x = leftWallCenter.x-20;
@@ -478,26 +505,123 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 		double degree = atan2(lineEd.y - lineSt.y, lineEd.x - lineSt.x) * (180.0/M_PI);
 			
 		// Ignore Y error
-		mouseErr->x = rightWallCenter.x - leftWallCenter.x;
+		mouseErr->x = (correctRightWallMidPt.x - correctLeftWallMidPt.x)*0.5 - (rightWallCenter.x - leftWallCenter.x)*0.5;
 		mouseErr->y = 0;
 		mouseErr->degree = (int)(degree+0.5);
 	}
 	else
 	{
+		cout << "wall 7" << endl;
+		cv::Point maxRPt, maxLPt;
+		int scoreR, scoreL;
+		int maxScoreL= -1, maxScoreR = -1;
+		int score[6] = {-1};		// RT, RL, RCross, LT, LL, LCross
+		vector<cv::Point> retPt;	// RT, RL, RCross, LT, LL, LCross
 		// Search Corner Proc
-		for(int y=0;y<1;y++)
+		for(int y=0;y< (morphoImg.rows*0.5)-(trainLImg.rows);y++)
 		{
-			for(int x=0;x<1;x++)
+			for(int x=0;x<(morphoImg.cols*0.5) - (trainLImg.cols);x++)
 			{
+				cv::Mat roiL(morphoImg, cv::Rect(x, y, trainLImg.cols, trainLImg.rows));
+				cv::Mat roiR(morphoImg, cv::Rect(x+morphoImg.cols*0.5, y, trainLImg.cols, trainLImg.rows));				
+				score[0] = detectCorner(roiR, trainTImg, retPt[0]);
+				score[3] = detectCorner(roiL, trainTImg, retPt[3]);
+				score[1] = detectCorner(roiR, trainLImg, retPt[1]);
+				score[4] = detectCorner(roiL, trainLImg, retPt[4]);
+				score[2] = detectCorner(roiR, trainCrossImg, retPt[2]);
+				score[5] = detectCorner(roiL, trainCrossImg, retPt[5]);
+				// Calc Max Score
+				for(int i=0; i<3; i++)
+				{
+					// R
+					if(score[i]>maxScoreR && score[i]>threshold)
+					{
+						maxScoreR = score[i];
+						maxRPt = retPt[i];
+					}
+					// L
+					if(score[i+3]>maxScoreR && score[i+3]>threshold)
+					{
+						maxScoreL = score[i+3];
+						maxLPt = retPt[i+3];
+					}
+				}
 				
 			}
-		}
-		
-		
-		if(1)
+		}		
+		if(maxScoreR > 0 || maxScoreL> 0)
 		{
-			
+			cout << "ms"  << endl;
+			if(wall[0]==1)
+			{
+				if(leftWallCenter.x-20 > 0)
+				{
+					roiPt.x = leftWallCenter.x-20;
+				}
+				if(leftWallCenter.y-20 > 0)
+				{
+					roiPt.y = leftWallCenter.y-20;
+				}
+				cout << "wall7roi"  << endl;
+				cv::Mat roi(morphoImg, cv::Rect(roiPt.x, roiPt.y, 40, 40));
+				thinning(roi, thinImg);
+				for(int y=0; y<thinImg.rows; y++)
+				{
+					for(int x=0; x<thinImg.cols; x++)
+					{
+						if(thinImg.data[y*thinImg.step+x*thinImg.elemSize()] != 0 && y < minY)
+						{
+							lineSt = cv::Point(x, y);
+							minY = y;
+						}
+						if(thinImg.data[y*thinImg.step+x*thinImg.elemSize()] != 0 && y > maxY)
+						{
+							lineEd = cv::Point(x, y);
+							maxY = y;
+						}
+					}
+				}
+				double degree = atan2(lineEd.y - lineSt.y, lineEd.x - lineSt.x) * (180.0/M_PI);
+				mouseErr->x = correctLeftWallStPt.x - maxLPt.x;
+				mouseErr->y = correctLeftWallStPt.y - maxLPt.y;
+				mouseErr->degree = (int)(degree+0.5);
+			}
+			if(wall[2]==1)
+			{
+				if(rightWallCenter.x+20 < morphoImg.cols)
+				{
+					roiPt.x = rightWallCenter.x-20;
+				}
+				if(rightWallCenter.y-20 > 0)
+				{
+					roiPt.y = rightWallCenter.y-20;
+				}
+				cout << "wall7roi2" << endl;
+				cv::Mat roi(morphoImg, cv::Rect(roiPt.x, roiPt.y, 40, 40));
+				thinning(roi, thinImg);
+				for(int y=0; y<thinImg.rows; y++)
+				{
+					for(int x=0; x<thinImg.cols; x++)
+					{
+						if(thinImg.data[y*thinImg.step+x*thinImg.elemSize()] != 0 && y < minY)
+						{
+							lineSt = cv::Point(x, y);
+							minY = y;
+						}
+						if(thinImg.data[y*thinImg.step+x*thinImg.elemSize()] != 0 && y > maxY)
+						{
+							lineEd = cv::Point(x, y);
+							maxY = y;
+						}
+					}
+				}
+				double degree = atan2(lineEd.y - lineSt.y, lineEd.x - lineSt.x) * (180.0/M_PI);
+				mouseErr->x = correctRightWallStPt.x - maxRPt.x;
+				mouseErr->y = correctRightWallStPt.y - maxRPt.y;
+				mouseErr->degree = (int)(degree+0.5);
+			}
 		}
+		// 
 		else
 		{
 			if(wall[0]==1)
@@ -508,8 +632,9 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 			}
 		}
 	}
-		
+		cout << "est fin" << endl;
 	//DEBUG
+/*
 	cv::imshow("frontRoi",frontRoi);
 	cv::imshow("leftRoi",leftRoi);
 	cv::imshow("rightRoi",rightRoi);
@@ -518,7 +643,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	cout <<"right" << rightWallArea << rightWallCenter << endl;
 	dstImg = cv::Mat(srcImg.size(), CV_8UC3);
 	cv::Vec3b color;
-/*
+
 	for(int y = 0; y < dstImg.rows; ++y)
 	{
 		for(int x = 0; x < dstImg.cols; ++x)

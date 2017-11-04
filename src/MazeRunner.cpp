@@ -102,34 +102,20 @@ bool MazeRunner::calibration()
 	int tswSts1 = 1;
 	int tswSts2 = 1;
 	int tswSts3 = 1;
+	RaspiCam raspiCam;
+	raspiCam.open();
+	int cnt =0;
 	while(tswSts3)
 	{
 		tswSts1 = tactsw.getTactSwSts1();
 		tswSts2 = tactsw.getTactSwSts2();
 		tswSts3 = tactsw.getTactSwSts3();
-		//cout << "tswSts1" << tswSts1 << endl;
-		//cout << "tswSts2 " << tswSts2 << endl;
+		
 		if(tswSts1 == 0)
 		{
-			usleep(1000000);
-			//wallDetector.getLightAverage();
-			MicroMouseDriver m;
-			usleep(1000000);
-			m.driveNBlock(1);
-			usleep(1000000);
-			m.driveNBlock(1);
-			usleep(1000000);
-			m.turnRight();
-			usleep(1000000);
-			m.turnLeft();
-			usleep(1000000);
-			m.turnLeft();
-			//	m.turnLeft();
-			//usleep(1000000);
-			//	m.inverse();
-			//usleep(1000000);
-			//	m.turnRight();
-			//usleep(1000000);
+			cout << "create" << endl;
+			raspiCam.createTrainImg(cnt);
+			cnt++;
 		}
 		if(tswSts2 == 0)
 		{
@@ -144,6 +130,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 	EstimatedErrors mouseErr;
 	RaspiCam raspiCam;
 	raspiCam.open();
+	raspiCam.loadTrainImg();
 	// メインループ数
 	int loopNum = 0;
 
@@ -163,6 +150,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 		// 壁情報（左,前,右）
 		int wall[3] = {0};
 
+		// 誤差情報の取得（カメラ機能使用）
 		raspiCam.getWallData(wall, &mouseErr);
 
 		// 壁情報（東西南北）
@@ -171,11 +159,14 @@ void MazeRunner::exploreMaze(Agent& agent)
 		// マウスの現在の進行方向
 		Direction nowDir(NORTH);
 
-		// 誤差情報の取得（カメラ機能使用）
-
 		// 位置補正
-		this.adjustMove(x, y, theta);
-
+		if(loopNum > 0){
+			cout << "mouseErr:" << 
+			 mouseErr.x << ", " <<
+			 mouseErr.y << ", " <<
+			 mouseErr.degree << endl;
+			//this->adjustMove(mouseErr.x, mouseErr.y, mouseErr.degree);
+		}
 		// センサから取得した壁情報を入れる
 		wallDetector.getWallData(wall);
 		// 壁情報変換（左前右　→　東西南北）

@@ -29,10 +29,11 @@ int main()
 	// 座標変換用
 	MazeRunner mazeRunner;
 	
+	//cout << "call calib" << endl;
 	// キャリブレーション実施
 	if(!mazeRunner.calibration())
 	{
-		return;
+		return 0;
 	}
 
 	// 迷路探索開始

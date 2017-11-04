@@ -19,5 +19,5 @@ class MazeRunner
 	void robotPositionInit();
 	void robotMove(Direction nowDir, Direction nextDir);
 	void robotMoveSequence(Operation runSequence);
-	voud adjustMove(int x, int y, int degTheta);
+	void adjustMove(int x, int y, int degTheta);
 };
