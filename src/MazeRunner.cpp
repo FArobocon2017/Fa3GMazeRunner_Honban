@@ -3,7 +3,6 @@
 #include <chrono>
 #include <opencv2/opencv.hpp>
 
-#include "../include/RaspiCam.h"
 #include "../include/MazeRunner.h"
 #include "../include/MicroMouseDriver.h"
 #include "../include/TactSW.h"
@@ -99,25 +98,28 @@ namespace{
 void MazeRunner::startMonitorCamera()
 {
 	TactSW tactsw;
-	int tswSts1 = 1;
+	int tswSts0 = 1;
 	RaspiCam raspiCam;
 	raspiCam.open();
 	raspiCam.createWindow();
-	//raspiCam.createTrainImg(cnt);
-	//raspiCam.loadTrainImg();
-	// 壁情報（左,前,右）
-	int wall[3] = {0};
-	EstimatedErrors mouseErr;
-
+	
 	// タクトスイッチ1が0になるまで1秒間隔で画像を撮り続ける
-	while(tswSts1!=0)
+	while(tswSts0!=0)
 	{
-		tswSts1 = tactsw.getTactSwSts1();
-		cout << "getWallData" << endl;
-		raspiCam.getWallData(wall, &mouseErr);
-		raspiCam.showImg();
-		this->setWall(wall);
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));	// 100ミリ秒
+		// 壁情報（左,前,右）
+		int wall[3] = {0};
+		EstimatedErrors mouseErr{0,0,0};
+		// 
+		tswSts0 = tactsw.getTactSwSts0();
+		
+		if(this->getCameraPermission())
+		{
+			cout << "getWallData" << endl;
+			raspiCam.getWallData(wall, &mouseErr);
+			raspiCam.showImg();
+			this->setSideWall(wall, mouseErr);
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));	// 20ミリ秒
+		}
 	}
 
 }
@@ -151,9 +153,40 @@ bool MazeRunner::calibration()
 	return true;
 }
 
-void MazeRunner::exploreMaze(Agent& agent)
+
+// For Debug
+void MazeRunner::dbg()
 {
 	EstimatedErrors mouseErr;
+	for(int i=0; i<10; i++)
+	{
+		// 壁情報（左,前,右）
+		int wall[3] = {0};
+	
+		// 誤差情報の取得（カメラ機能使用）
+		this->getSideWall(wall, &mouseErr);
+		
+		// disp
+		cout << "main thread:" << i << endl;
+		cout << "wall:[" << wall [0] << ", " << wall [1] << ", "<< wall [2]<< "]" << endl;
+		cout << "mouseErr:" << mouseErr.x << ", " << mouseErr.y << ", " << mouseErr.degree << endl;
+		usleep(1000000);
+		
+		// Light Sensor Proc....
+		this->setCameraPermission(false);
+		// proc
+		for(int j=0; j<3; j++)
+		{
+			cout << "Light Sensor Proc:" << j << endl;
+			usleep(500000);
+		}
+		//
+		this->setCameraPermission(true);
+	}
+}
+
+void MazeRunner::exploreMaze(Agent& agent)
+{
 	// メインループ数
 	int loopNum = 0;
 
@@ -172,9 +205,10 @@ void MazeRunner::exploreMaze(Agent& agent)
 		
 		// 壁情報（左,前,右）
 		int wall[3] = {0};
+		EstimatedErrors mouseErr = {0,0,0};
 
 		// 誤差情報の取得（カメラ機能使用）
-		this->getWall(wall);
+		this->getSideWall(wall, &mouseErr);
 
 		// 壁情報（東西南北）
 		WallDetector wallDetector;
@@ -240,10 +274,16 @@ void MazeRunner::exploreMaze(Agent& agent)
 		//突然今と180度逆の方向を示してくる場合もあるので注意
 		//止まらないと壁にぶつかる
 		this->robotMove(nowDir, nextDir);  //robotMove関数はDirection型を受け取ってロボットをそっちに動かす関数
-		
 		nowPos = this->setRobotPos(nowPos, nextDir);
 		nowDir = nextDir;
 		//usleep(100000);
+		
+		
+		//
+		// LightSensor Proc
+		//
+		
+		
 		
 		cout << "nextDir[N,E,S,W]:" 
 			<< static_cast<int16_t>(nextDir.bits.North) << " " 

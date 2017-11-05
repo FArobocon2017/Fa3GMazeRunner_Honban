@@ -25,8 +25,10 @@ int main()
 		
 	// マウスの現在の進行方向
 	Direction nowDir(NORTH);
+	
 	// マウスの現在位置（X,Y）
 	IndexVec nowPos(0,0);
+	
 	// 座標変換用
 	MazeRunner mazeRunner;
 	
@@ -43,11 +45,8 @@ int main()
 	});
 
 	// ↓ DEBUG
-	for(int i=0; i<10; i++)
-	{
-			usleep(2000000);
-			cout << "Main Thread i:" << i <<endl;
-	}
+	mazeRunner.dbg();
+	ftr.wait();
 	return 0;
 	// ↑ DEBUG
 	
