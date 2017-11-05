@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+#include <chrono>
 #include <opencv2/opencv.hpp>
 
 #include "../include/RaspiCam.h"
@@ -95,6 +96,29 @@ namespace{
 	}
 }
 
+void MazeRunner::startMonitorCamera()
+{
+	TactSW tactsw;
+	int tswSts2 = 1;
+	RaspiCam raspiCam;
+	raspiCam.open();
+	raspiCam.createTrainImg(cnt);
+	raspiCam.loadTrainImg();
+	// 壁情報（左,前,右）
+	int wall[3] = {0};
+	EstimatedErrors mouseErr;
+
+	// タクトスイッチ２が０になるまで1秒間隔で画像を撮り続ける
+	while(tswSts2!=0)
+	{
+		tswSts2 = tactsw.getTactSwSts2();
+		raspiCam.getWallData(wall, &mouseErr);
+		this->setWall(wall);
+		std::this_thread::sleep_for(std::chrono::seconds(1));	// 1秒
+	}
+
+}
+
 bool MazeRunner::calibration()
 {
 	// タクトスイッチ
@@ -102,8 +126,7 @@ bool MazeRunner::calibration()
 	int tswSts1 = 1;
 	int tswSts2 = 1;
 	int tswSts3 = 1;
-	RaspiCam raspiCam;
-	raspiCam.open();
+	
 	int cnt =0;
 	while(tswSts3)
 	{
@@ -114,7 +137,6 @@ bool MazeRunner::calibration()
 		if(tswSts1 == 0)
 		{
 			cout << "create" << endl;
-			raspiCam.createTrainImg(cnt);
 			cnt++;
 		}
 		if(tswSts2 == 0)
@@ -122,15 +144,13 @@ bool MazeRunner::calibration()
 			return false;
 		}
 	}
+
 	return true;
 }
 
 void MazeRunner::exploreMaze(Agent& agent)
 {
 	EstimatedErrors mouseErr;
-	RaspiCam raspiCam;
-	raspiCam.open();
-	raspiCam.loadTrainImg();
 	// メインループ数
 	int loopNum = 0;
 
@@ -151,7 +171,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 		int wall[3] = {0};
 
 		// 誤差情報の取得（カメラ機能使用）
-		raspiCam.getWallData(wall, &mouseErr);
+		this->getWall(wall);
 
 		// 壁情報（東西南北）
 		WallDetector wallDetector;
@@ -168,7 +188,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 			//this->adjustMove(mouseErr.x, mouseErr.y, mouseErr.degree);
 		}
 		// センサから取得した壁情報を入れる
-		wallDetector.getWallData(wall);
+		//wallDetector.getWallData(wall);
 		// 壁情報変換（左前右　→　東西南北）
 		Direction wallData = ::determineDirection(wall, nowDir);
 		

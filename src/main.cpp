@@ -6,6 +6,7 @@
 #include "../include/Agent.h"
 #include "../include/MazeData.h"
 #include "../include/MazeRunner.h"
+#include "../include/ThreadPool.h"
 
 #include "../include/WallDetector.h"
 #include "../include/MicroMouseDriver.h"
@@ -35,6 +36,11 @@ int main()
 	{
 		return 0;
 	}
+	// カメラ監視スレッド作成
+	ThreadPool pool;
+	auto ftr = pool.enqueue([&mazeRunner](){
+		mazeRunner.startMonitorCamera();
+	});
 
 	// 迷路探索開始
 	usleep(2000000);
@@ -65,6 +71,7 @@ int main()
 		cout << "runSequence[" << i <<"]" << runSequence[i].op << ","<< static_cast<int16_t>(runSequence[i].n) << endl;
 		mazeRunner.robotMoveSequence(runSequence[i]); //robotMode関数はOperation型を受け取ってそれを実行する関数
 	}
+	ftr.wait();
 	
 	//fin
 	// 壁情報（左,前,右）
@@ -77,5 +84,6 @@ int main()
 		cout << "wall:" << "[" << wall[0] << "," << wall[1] << ","<< wall[2] << "]"<< endl;
 		usleep(1000000);
 	}
+
 	return 0;
 }

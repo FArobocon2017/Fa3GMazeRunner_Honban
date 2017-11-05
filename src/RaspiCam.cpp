@@ -302,7 +302,11 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	// Morphology(Opening)
 	morphologyEx(maskImg, morphoImg, cv::MORPH_OPEN, cv::Mat(3, 3, CV_8UC1), cv::Point(-1, -1), 3, cv::BORDER_REFLECT);
 	cout << "morpho" << endl;
+
+	// 画像表示
+	showImg();
 	
+/*
 	// ROI
 	cv::Mat frontRoi = morphoImg(frontProcRect);
 	cv::Mat leftRoi  = morphoImg(leftProcRect);
@@ -634,6 +638,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	}
 		cout << "est fin" << endl;
 	//DEBUG
+*/
 /*
 	cv::imshow("frontRoi",frontRoi);
 	cv::imshow("leftRoi",leftRoi);
@@ -652,6 +657,7 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 		}
 	}
 */	
+/*
 	//Labeling
 	int nLabels = cv::connectedComponentsWithStats(morphoImg, labelImg, stats, centroids);
 	std::vector<cv::Vec3b> colors(nLabels);
@@ -684,4 +690,5 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 
 	// Thinning 
 	thinning(morphoImg, thinImg);
+*/
 }
