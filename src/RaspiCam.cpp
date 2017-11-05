@@ -81,9 +81,9 @@ void RaspiCam::createWindow()
 	cv::namedWindow("srcImg", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("hsvImg", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("maskImg", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("thinImg", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("thinImg", CV_WINDOW_AUTOSIZE);
 	//cv::namedWindow("lsdImg", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("dstImg", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("dstImg", CV_WINDOW_AUTOSIZE);
 }
 
 
@@ -93,9 +93,9 @@ void RaspiCam::showImg()
 	cv::imshow("srcImg",srcImg);
 	cv::imshow("hsvImg",hsvImg);
 	cv::imshow("maskImg",maskImg);
-	cv::imshow("thinImg",thinImg);
+	//cv::imshow("thinImg",thinImg);
 	//cv::imshow("lsdImg",lsdImg);
-	cv::imshow("dstImg",dstImg);
+	//cv::imshow("dstImg",dstImg);
 	cv::waitKey(1);
 }
 
@@ -301,10 +301,6 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	
 	// Morphology(Opening)
 	morphologyEx(maskImg, morphoImg, cv::MORPH_OPEN, cv::Mat(3, 3, CV_8UC1), cv::Point(-1, -1), 3, cv::BORDER_REFLECT);
-	cout << "morpho" << endl;
-
-	// 画像表示
-	showImg();
 	
 /*
 	// ROI

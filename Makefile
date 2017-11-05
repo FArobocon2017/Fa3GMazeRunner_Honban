@@ -7,7 +7,7 @@ SRC_DIR	= ./src
 OBJ_DIR	= ./build
 SOURCES	= $(shell ls $(SRC_DIR)/*.cpp)
 OBJS	= $(subst $(SRC_DIR),$(OBJ_DIR), $(SOURCES:.cpp=.o))
-TARGET	= a
+TARGET	= MazeRunner
 DEPENDS	= $(OBJS:.o=.d)
 
 all: $(TARGET)

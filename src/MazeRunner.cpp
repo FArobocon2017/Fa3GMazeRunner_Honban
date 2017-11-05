@@ -99,22 +99,25 @@ namespace{
 void MazeRunner::startMonitorCamera()
 {
 	TactSW tactsw;
-	int tswSts2 = 1;
+	int tswSts1 = 1;
 	RaspiCam raspiCam;
 	raspiCam.open();
-	raspiCam.createTrainImg(cnt);
-	raspiCam.loadTrainImg();
+	raspiCam.createWindow();
+	//raspiCam.createTrainImg(cnt);
+	//raspiCam.loadTrainImg();
 	// 壁情報（左,前,右）
 	int wall[3] = {0};
 	EstimatedErrors mouseErr;
 
-	// タクトスイッチ２が０になるまで1秒間隔で画像を撮り続ける
-	while(tswSts2!=0)
+	// タクトスイッチ1が0になるまで1秒間隔で画像を撮り続ける
+	while(tswSts1!=0)
 	{
-		tswSts2 = tactsw.getTactSwSts2();
+		tswSts1 = tactsw.getTactSwSts1();
+		cout << "getWallData" << endl;
 		raspiCam.getWallData(wall, &mouseErr);
+		raspiCam.showImg();
 		this->setWall(wall);
-		std::this_thread::sleep_for(std::chrono::seconds(1));	// 1秒
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));	// 100ミリ秒
 	}
 
 }
@@ -123,23 +126,23 @@ bool MazeRunner::calibration()
 {
 	// タクトスイッチ
 	TactSW tactsw;
+	int tswSts0 = 1;
 	int tswSts1 = 1;
 	int tswSts2 = 1;
-	int tswSts3 = 1;
 	
 	int cnt =0;
-	while(tswSts3)
+	while(tswSts2)
 	{
+		tswSts0 = tactsw.getTactSwSts0();
 		tswSts1 = tactsw.getTactSwSts1();
 		tswSts2 = tactsw.getTactSwSts2();
-		tswSts3 = tactsw.getTactSwSts3();
 		
-		if(tswSts1 == 0)
+		if(tswSts0 == 0)
 		{
 			cout << "create" << endl;
 			cnt++;
 		}
-		if(tswSts2 == 0)
+		if(tswSts1 == 0)
 		{
 			return false;
 		}
@@ -187,8 +190,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 			 mouseErr.degree << endl;
 			//this->adjustMove(mouseErr.x, mouseErr.y, mouseErr.degree);
 		}
-		// センサから取得した壁情報を入れる
-		//wallDetector.getWallData(wall);
+		
 		// 壁情報変換（左前右　→　東西南北）
 		Direction wallData = ::determineDirection(wall, nowDir);
 		

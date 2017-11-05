@@ -37,11 +37,21 @@ int main()
 		return 0;
 	}
 	// カメラ監視スレッド作成
-	ThreadPool pool;
+	ThreadPool pool(1);
 	auto ftr = pool.enqueue([&mazeRunner](){
 		mazeRunner.startMonitorCamera();
 	});
 
+	// ↓ DEBUG
+	for(int i=0; i<10; i++)
+	{
+			usleep(2000000);
+			cout << "Main Thread i:" << i <<endl;
+	}
+	return 0;
+	// ↑ DEBUG
+	
+	
 	// 迷路探索開始
 	usleep(2000000);
 	mazeRunner.exploreMaze(agent);
@@ -74,16 +84,7 @@ int main()
 	ftr.wait();
 	
 	//fin
-	// 壁情報（左,前,右）
-	int wall[3] = {0};
-	// センサ機能確認用
-	for(int i=0;i<10;i++)
-	{
-		cout << "i:" << i << endl;
-		wallDetector.getWallData(wall);
-		cout << "wall:" << "[" << wall[0] << "," << wall[1] << ","<< wall[2] << "]"<< endl;
-		usleep(1000000);
-	}
+	cout << "finished." << endl;
 
 	return 0;
 }

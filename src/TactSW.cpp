@@ -22,7 +22,7 @@ void TactSW::getTactSwStsAll(int *tswSts)
 }
 
 
-int TactSW::getTactSwSts1()
+int TactSW::getTactSwSts0()
 {
 	int tswSts = 0;
 	ifstream ifs("/dev/rtswitch0");
@@ -31,7 +31,7 @@ int TactSW::getTactSwSts1()
 	return tswSts;
 }
 
-int TactSW::getTactSwSts2()
+int TactSW::getTactSwSts1()
 {
 	int tswSts = 0;
 	ifstream ifs("/dev/rtswitch1");
@@ -40,7 +40,7 @@ int TactSW::getTactSwSts2()
 	return tswSts;
 }
 
-int TactSW::getTactSwSts3()
+int TactSW::getTactSwSts2()
 {
 	int tswSts = 0;
 	ifstream ifs("/dev/rtswitch2");
