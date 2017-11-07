@@ -2,10 +2,10 @@
 
 #include "Sensor.h"
 
-#define FL_TH	1500
+#define FL_TH	700
 #define L_TH	200
 #define R_TH	200
-#define FR_TH	1500
+#define FR_TH	700
 
 #define M	500
 

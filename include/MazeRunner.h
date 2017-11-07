@@ -17,23 +17,28 @@ class MazeRunner
 	int m_wall[3];
 	EstimatedErrors m_errors;
 
-	void setSideWall(int* wall, EstimatedErrors errors)
+	void setWall(int* wall, EstimatedErrors errors)
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 		m_wall[0] = wall[0];
+		m_wall[1] = wall[1];
 		m_wall[2] = wall[2];
 		m_errors.x = errors.x;
+		m_errors.y = errors.y;
 		m_errors.degree = errors.degree;
 	}
 	
-	void getSideWall(int* wall, EstimatedErrors* errors)
+	void getWall(int* wall, EstimatedErrors* errors)
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 		wall[0] = m_wall[0];
+		wall[1] = m_wall[1];
 		wall[2] = m_wall[2];
 		errors->x = m_errors.x;
+		errors->y = m_errors.y;
 		errors->degree = m_errors.degree;
 	}
+	
 
 	void setCameraPermission(bool cameraPermission)
 	{

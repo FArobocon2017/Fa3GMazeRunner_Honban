@@ -62,38 +62,11 @@ void WallDetector::getWallData(int *wall)
 	int	senSts[4]={0};
 	sensor.getSensorSts(senSts);
 	
-	if(senSts[0] < FL_TH && senSts[1] < L_TH && senSts[2] < R_TH && senSts[3] < FR_TH)
+	if(senSts[0] > FL_TH || senSts[3] > FR_TH)
 	{
-		wall[0] = 0;		wall[1] = 0;		wall[2] = 0;
+		wall[1] = 1;
 	}
-	else if(senSts[0] < FL_TH && senSts[1] < L_TH && senSts[2] > R_TH && senSts[3] < FR_TH)
-	{
-		wall[0] = 1;		wall[1] = 0;		wall[2] = 0;
-	}
-	else if(senSts[0] > FL_TH && senSts[1] < L_TH+M && senSts[2] < R_TH+M && senSts[3] > FR_TH)
-	{
-		wall[0] = 0;		wall[1] = 1;		wall[2] = 0;
-	}
-	else if(senSts[0] > FL_TH && senSts[1] < L_TH+M && senSts[2] > R_TH+M && senSts[3] > FR_TH)
-	{
-		wall[0] = 1;		wall[1] = 1;		wall[2] = 0;
-	}
-	else if(senSts[0] < FL_TH && senSts[1] > L_TH && senSts[2] < R_TH && senSts[3] < FR_TH)
-	{
-		wall[0] = 0;		wall[1] = 0;		wall[2] = 1;
-	}
-	else if(senSts[0] < FL_TH && senSts[1] > L_TH && senSts[2] > R_TH && senSts[3] < FR_TH)
-	{
-		wall[0] = 1;		wall[1] = 0;		wall[2] = 1;
-	}
-	else if(senSts[0] > FL_TH && senSts[1] > L_TH+M && senSts[2] < R_TH+M && senSts[3] > FR_TH)
-	{
-		wall[0] = 0;		wall[1] = 1;		wall[2] = 1;
-	}
-	else if(senSts[0] > FL_TH && senSts[1] > L_TH+M && senSts[2] > R_TH+M && senSts[3] > FR_TH)
-	{
-		wall[0] = 1;		wall[1] = 1;		wall[2] = 1;
-	}
+	cout  << "sen0:" << senSts[0] << " sen3:" << senSts[3] << endl;
 }
 
 // 光センサの取得

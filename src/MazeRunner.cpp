@@ -99,6 +99,7 @@ void MazeRunner::startMonitorCamera()
 {
 	TactSW tactsw;
 	int tswSts0 = 1;
+	WallDetector wallDetector;
 	RaspiCam raspiCam;
 	raspiCam.open();
 	raspiCam.createWindow();
@@ -114,14 +115,20 @@ void MazeRunner::startMonitorCamera()
 		
 		if(this->getCameraPermission())
 		{
-			cout << "getWallData" << endl;
+			//cout << "getWallData" << endl;
 			raspiCam.getWallData(wall, &mouseErr);
 			raspiCam.showImg();
-			this->setSideWall(wall, mouseErr);
+			wallDetector.getWallData(wall);
+			if(wall[1] == 1)
+			{
+				// hosei 
+				// raspiCam.calcCenter();
+			}
+			this->setWall(wall, mouseErr);
+			
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));	// 20ミリ秒
 		}
 	}
-
 }
 
 bool MazeRunner::calibration()
@@ -158,13 +165,17 @@ bool MazeRunner::calibration()
 void MazeRunner::dbg()
 {
 	EstimatedErrors mouseErr;
-	for(int i=0; i<10; i++)
+	
+	
+	for(int i=0; i<20; i++)
 	{
 		// 壁情報（左,前,右）
 		int wall[3] = {0};
 	
 		// 誤差情報の取得（カメラ機能使用）
-		this->getSideWall(wall, &mouseErr);
+		this->getWall(wall, &mouseErr);
+		
+		
 		
 		// disp
 		cout << "main thread:" << i << endl;
@@ -172,6 +183,7 @@ void MazeRunner::dbg()
 		cout << "mouseErr:" << mouseErr.x << ", " << mouseErr.y << ", " << mouseErr.degree << endl;
 		usleep(1000000);
 		
+		/*
 		// Light Sensor Proc....
 		this->setCameraPermission(false);
 		// proc
@@ -182,6 +194,7 @@ void MazeRunner::dbg()
 		}
 		//
 		this->setCameraPermission(true);
+		*/
 	}
 }
 
@@ -208,11 +221,17 @@ void MazeRunner::exploreMaze(Agent& agent)
 		EstimatedErrors mouseErr = {0,0,0};
 
 		// 誤差情報の取得（カメラ機能使用）
-		this->getSideWall(wall, &mouseErr);
+		this->getWall(wall, &mouseErr);
 
+		//
+		// LightSensor Proc
+		//
 		// 壁情報（東西南北）
 		WallDetector wallDetector;
-
+		wallDetector.getWallData(wall);
+	
+		
+		
 		// マウスの現在の進行方向
 		Direction nowDir(NORTH);
 
@@ -279,9 +298,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 		//usleep(100000);
 		
 		
-		//
-		// LightSensor Proc
-		//
+
 		
 		
 		

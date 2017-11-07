@@ -25,8 +25,8 @@ RaspiCam::RaspiCam():
 
 	// Correct Wall Area
 	//correctFrontWallArea(1700),
-	correctLeftWallArea(1500),
-	correctRightWallArea(1500),
+	correctLeftWallArea(1300),
+	correctRightWallArea(1300),
 
 	// Image Processing Area
 	//frontProcArea(cv::Size(	imgWidth-FBW*2,	imgHeight/2.6)),
@@ -71,7 +71,7 @@ void RaspiCam::open()
 	Camera.set(CV_CAP_PROP_FRAME_WIDTH, imgWidth);
 	Camera.set(CV_CAP_PROP_FRAME_HEIGHT, imgHeight);
 	Camera.set(CV_CAP_PROP_GAIN, 18);
-	Camera.set(CV_CAP_PROP_EXPOSURE, 80);
+	//Camera.set(CV_CAP_PROP_EXPOSURE, 80);
 	
 	// Open camera
 	if (!Camera.open())
@@ -138,6 +138,7 @@ int calcCenter(cv::Mat img, cv::Point& center)
 {
 	int x, y;
 	int area=0;
+	int weightArea=0;
 	double mx=0.0, my=0.0;
 	for(y=0;y<img.rows;y++)
 	{
@@ -148,11 +149,16 @@ int calcCenter(cv::Mat img, cv::Point& center)
 				mx += x;
 				my += y;
 				area ++;
+				weightArea++;
+				if((y>img.rows*0.4)&&(y<img.rows*0.6))
+				{
+					//weightArea+=2;
+				}
 			}
 		}// x
 	}//y
 	center = cv::Point(mx/area, my/area);
-	return area;
+	return weightArea;
 }
 
 
@@ -236,7 +242,17 @@ int calcFrontWallGradient(cv::Mat& img)
 		}
 	}
 	cv::line(img, lineSt, lineEd, 128);
-	degree = atan2(lineEd.y - lineSt.y, lineEd.x - lineSt.x) * (180.0/M_PI);
+	int diffx = lineEd.x - lineSt.x;
+	int diffy = lineEd.y - lineSt.y;
+	if(diffx==0 || diffy==0)
+	{
+		degree = 0;
+	}
+	else 
+	{
+		degree = atan2(diffy, diffx) * (180.0/M_PI); 
+	}
+
 	if(degree < 0)
 	{
 		degree += 90.0;
@@ -276,7 +292,17 @@ int calcSideWallGradient(cv::Mat& img)
 		}
 	}
 	cv::line(img, lineSt, lineEd, 128);
-	degree = atan2(lineEd.y - lineSt.y, lineEd.x - lineSt.x) * (180.0/M_PI);
+	int diffx = lineEd.x - lineSt.x;
+	int diffy = lineEd.y - lineSt.y;
+	if(diffx==0 || diffy==0)
+	{
+		degree = 0;
+	}
+	else 
+	{
+		degree = atan2(diffy, diffx) * (180.0/M_PI); 
+	}
+	
 	if(degree < 0)
 	{
 		degree += 90.0;
@@ -310,14 +336,14 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	cv::cvtColor(rightRoi, rightRoi, CV_BGR2HSV);
 
 	// Red Light filter
-	cv::inRange(leftRoi, cv::Scalar(150, 70, 70), cv::Scalar(190, 255, 255), leftBinImg);
-	cv::inRange(rightRoi, cv::Scalar(150, 70, 70), cv::Scalar(190, 255, 255), rightBinImg);
+	cv::inRange(leftRoi, cv::Scalar(150, 75, 0), cv::Scalar(195, 255, 255), leftBinImg);
+	cv::inRange(rightRoi, cv::Scalar(150, 75, 0), cv::Scalar(195, 255, 255), rightBinImg);
 
 	// Morphology(Opening)
 	cv::erode(leftBinImg, leftBinImg, cv::Mat(), cv::Point(-1, -1), 3);
 	cv::dilate(leftBinImg, leftBinImg, cv::Mat(), cv::Point(-1, -1), 3);
-	cv::erode(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
-	cv::dilate(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
+	//cv::erode(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
+	//cv::dilate(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
 	
 	// Calc Wall Center
 	//frontWallArea	= calcCenter(frontRoi, frontWallCenter);
@@ -368,6 +394,8 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	/*
 	cout << "wall[0]:" << wall[0] << " Area:" << leftWallArea	<< " leftWallCenter" << leftWallCenter << endl;
 	cout << "wall[2]:" << wall[2] << " Area:" << rightWallArea	<< " rightWallCenter" << rightWallCenter << endl;
+	cout << "mouseErr->x:" << mouseErr->x <<endl;
+	cout << "mouseErr->y:" << mouseErr->y <<endl;
 	cout << "mouseErr->degree:" << mouseErr->degree <<endl;
 	//*/
 	// DEBUG

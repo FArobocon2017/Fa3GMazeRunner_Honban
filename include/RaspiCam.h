@@ -21,6 +21,7 @@ private:
 	cv::Mat leftBinImg;
 	cv::Mat rightBinImg;
 	cv::Mat dstImg;
+	cv::Mat latestImg;
 
 	// Image Processing Area
 	int FBW;	// Front Border Width (not Use)
