@@ -223,15 +223,6 @@ void MazeRunner::exploreMaze(Agent& agent)
 		// 誤差情報の取得（カメラ機能使用）
 		this->getWall(wall, &mouseErr);
 
-		//
-		// LightSensor Proc
-		//
-		// 壁情報（東西南北）
-		WallDetector wallDetector;
-		wallDetector.getWallData(wall);
-	
-		
-		
 		// マウスの現在の進行方向
 		Direction nowDir(NORTH);
 
@@ -296,11 +287,6 @@ void MazeRunner::exploreMaze(Agent& agent)
 		nowPos = this->setRobotPos(nowPos, nextDir);
 		nowDir = nextDir;
 		//usleep(100000);
-		
-		
-
-		
-		
 		
 		cout << "nextDir[N,E,S,W]:" 
 			<< static_cast<int16_t>(nextDir.bits.North) << " " 
