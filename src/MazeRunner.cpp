@@ -116,13 +116,13 @@ void MazeRunner::startMonitorCamera()
 		if(this->getCameraPermission())
 		{
 			//cout << "getWallData" << endl;
-			raspiCam.getWallData(wall, &mouseErr);
+			raspiCam.capture();
+			raspiCam.getSideWallData(wall, &mouseErr);
 			raspiCam.showImg();
 			wallDetector.getWallData(wall);
 			if(wall[1] == 1)
 			{
-				// hosei 
-				// raspiCam.calcCenter();
+				raspiCam.getFrontWallData(wall, &mouseErr);
 			}
 			this->setWall(wall, mouseErr);
 			
@@ -174,8 +174,6 @@ void MazeRunner::dbg()
 	
 		// 誤差情報の取得（カメラ機能使用）
 		this->getWall(wall, &mouseErr);
-		
-		
 		
 		// disp
 		cout << "main thread:" << i << endl;

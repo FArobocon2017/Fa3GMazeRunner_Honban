@@ -20,37 +20,40 @@ RaspiCam::RaspiCam():
 	imgWidth(320), imgHeight(240),
 
 	// Border Width
-	//FBW(imgWidth/4.4),
+	FBW(0),
 	LBW(0),RBW(0),
 
 	// Correct Wall Area
-	//correctFrontWallArea(1700),
+	correctFrontWallArea(1300),
 	correctLeftWallArea(1300),
 	correctRightWallArea(1300),
 
-	// Image Processing Area
-	//frontProcArea(cv::Size(	imgWidth-FBW*2,	imgHeight/2.6)),
-	leftProcArea (cv::Size(	imgWidth/2.3, imgHeight-LBW)),
-	rightProcArea(cv::Size(	imgWidth/2.3, imgHeight-RBW)),
-	//frontProcRect(cv::Rect(	FBW-15, 0, frontProcArea.width, frontProcArea.height)),	// Front	
-	leftProcRect (cv::Rect(	0, LBW, leftProcArea.width,  leftProcArea.height)),	// Left
-	rightProcRect(cv::Rect(	imgWidth-rightProcArea.width, RBW,
-							rightProcArea.width, rightProcArea.height)),		// Right
-	frontWallArea(0), leftWallArea(0), rightWallArea(0),
-	
 	// Correct Wall Pt
 	correctFrontWallStPt(50,50),	correctFrontWallMidPt(145, 50),	correctFrontWallEdPt(240,50),
 	correctLeftWallStPt (50,50),	correctLeftWallMidPt ( 55,155),	correctLeftWallEdPt (50,240),
 	correctRightWallStPt(240,50),	correctRightWallMidPt(230,155),	correctRightWallEdPt(240,240),
 	
-	// Mouse Centor
-	correctMousePt((correctRightWallMidPt.x+correctLeftWallMidPt.x)*0.5,
+	// Correct Mouse Pt
+	correctMouseCenterPt((correctRightWallMidPt.x+correctLeftWallMidPt.x)*0.5,
 					(correctRightWallMidPt.y+correctLeftWallMidPt.y)*0.5),
-					
+	correctMouseFPt	(correctMouseCenterPt.x , correctMouseCenterPt.y - 60),
+	correctMouseFLPt(correctMouseCenterPt.x - 45, correctMouseCenterPt.y - 40),
+	correctMouseFRPt(correctMouseCenterPt.x + 50, correctMouseCenterPt.y - 40),
+
 	// Pillar Area
-	leftPillarPt (correctMousePt.x-72, correctMousePt.y-18),
-	rightPillarPt(correctMousePt.x+102,correctMousePt.y-25),
-	pillarSize(60,60)
+	leftPillarPt (correctMouseCenterPt.x-72, correctMouseCenterPt.y-18),
+	rightPillarPt(correctMouseCenterPt.x+102,correctMouseCenterPt.y-25),
+	pillarSize(60,60),
+
+	// Image Processing Area
+	frontProcArea(cv::Size(	imgWidth-FBW*2,	imgHeight/2.6)),
+	leftProcArea (cv::Size(	imgWidth/2.3, imgHeight-LBW)),
+	rightProcArea(cv::Size(	imgWidth/2.3, imgHeight-RBW)),
+	frontProcRect(cv::Rect(	FBW, 0, frontProcArea.width, frontProcArea.height)),	// Front	
+	leftProcRect (cv::Rect(	0, LBW, leftProcArea.width,  leftProcArea.height)),		// Left
+	rightProcRect(cv::Rect(	imgWidth-rightProcArea.width, RBW,						// Right
+							rightProcArea.width, rightProcArea.height)),		
+	frontWallArea(0), leftWallArea(0), rightWallArea(0)
 { }
 
 
@@ -88,19 +91,32 @@ void RaspiCam::close()
 	Camera.release();
 }
 
+// Capture
+void RaspiCam::capture()
+{
+	// Grab
+	Camera.grab();
+	Camera.retrieve(srcImg);
+
+	// Flip
+	cv::flip(srcImg, srcImg, -1);
+}
+
+
 // Create Window
 void RaspiCam::createWindow()
 {
 	cv::namedWindow("srcImg", CV_WINDOW_AUTOSIZE);
+	cv::namedWindow("frontRoi", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("leftRoi", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("rightRoi", CV_WINDOW_AUTOSIZE);
+	cv::namedWindow("frontBinImg", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("leftBinImg", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("rightBinImg", CV_WINDOW_AUTOSIZE);
+	cv::namedWindow("frontThinRoi", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("leftPillarRoi", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("rightPillarRoi", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("dstImg", CV_WINDOW_AUTOSIZE);
-	//cv::namedWindow("thinImg", CV_WINDOW_AUTOSIZE);
-	//cv::namedWindow("lsdImg", CV_WINDOW_AUTOSIZE);
 }
 
 
@@ -108,15 +124,25 @@ void RaspiCam::createWindow()
 void RaspiCam::showImg()
 {
 	cv::imshow("srcImg",srcImg);
+	if(frontRoi.data != NULL)
+	{
+		cv::imshow("frontRoi",frontRoi);
+	}
 	cv::imshow("leftRoi",leftRoi);
 	cv::imshow("rightRoi",rightRoi);
+	if(frontBinImg.data != NULL)
+	{
+		cv::imshow("frontBinImg",frontBinImg);
+	}
 	cv::imshow("leftBinImg",leftBinImg);
 	cv::imshow("rightBinImg",rightBinImg);
+	if(frontThinRoi.data != NULL)
+	{
+		cv::imshow("frontThinRoi",frontThinRoi);
+	}
 	cv::imshow("leftPillarRoi",leftPillarRoi);
 	cv::imshow("rightPillarRoi",rightPillarRoi);
 	cv::imshow("dstImg",dstImg);
-	//cv::imshow("thinImg",thinImg);
-	//cv::imshow("lsdImg",lsdImg);
 	cv::waitKey(1);
 }
 
@@ -125,16 +151,11 @@ void RaspiCam::showImg()
 void RaspiCam::writeImg()
 {
 	cv::imwrite("./Img/srcImg.jpg",srcImg);
-	//cv::imwrite("./Img/hsvImg.jpg",hsvImg);
-	//cv::imwrite("./Img/maskImg.jpg",maskImg);
-	//cv::imwrite("./Img/thinImg.jpg",thinImg);
-	//cv::imwrite("./Img/lsdImg.jpg",lsdImg);
-	//cv::imwrite("./Img/dstImg.jpg",dstImg);
 }
 
 
-// Calc Center
-int calcCenter(cv::Mat img, cv::Point& center)
+// Calc Wall Center Point
+int RaspiCam::calcSideWallCenter(cv::Mat img, cv::Point& center)
 {
 	int x, y;
 	int area=0;
@@ -144,7 +165,7 @@ int calcCenter(cv::Mat img, cv::Point& center)
 	{
 		for(x=0;x<img.cols;x++)
 		{
-			if(img.data[   y   * img.step +   x   * img.elemSize()] != 0)
+			if(img.data[y*img.step+x*img.elemSize()] != 0)
 			{
 				mx += x;
 				my += y;
@@ -152,7 +173,7 @@ int calcCenter(cv::Mat img, cv::Point& center)
 				weightArea++;
 				if((y>img.rows*0.4)&&(y<img.rows*0.6))
 				{
-					//weightArea+=2;
+					weightArea+=2;
 				}
 			}
 		}// x
@@ -161,6 +182,100 @@ int calcCenter(cv::Mat img, cv::Point& center)
 	return weightArea;
 }
 
+int RaspiCam::calcFrontWallCenter(cv::Mat img, cv::Point& center)
+{
+	int x, y;
+	int area=0;
+	int weightArea=0;
+	double mx=0.0, my=0.0;
+	for(y=0;y<img.rows;y++)
+	{
+		for(x=0;x<img.cols;x++)
+		{
+			if(img.data[y*img.step+x*img.elemSize()] != 0)
+			{
+				mx += x;
+				my += y;
+				area ++;
+				weightArea++;
+				if((x>img.cols*0.4)&&(x<img.cols*0.6))
+				{
+					weightArea+=2;
+				}
+			}
+		}// x
+	}//y
+	center = cv::Point(mx/area, my/area);
+	return weightArea;
+}
+
+
+// Calc Nearest Wall Point
+int RaspiCam::calcNearestLeftWallPt(cv::Mat img, cv::Point& nearest)
+{
+	nearest = cv::Point(0,0);
+	int x, y;
+	for(y=0;y<img.rows;y++)
+	{
+		for(x=0;x<img.cols;x++)
+		{
+			if(img.data[y*img.step+x*img.elemSize()] != 0 )
+			{
+				if((y<correctMouseFLPt.y+10)&&(y>correctMouseFLPt.y-10))
+				{
+					if(nearest.x < x){
+						nearest = cv::Point(x,y);
+					}
+				}
+			}
+		}// x
+	}//y
+	return correctMouseFLPt.x - nearest.x;
+}
+
+int RaspiCam::calcNearestRightWallPt(cv::Mat img, cv::Point& nearest)
+{
+	nearest = cv::Point(img.cols,0);
+	int x, y;
+	for(y=0;y<img.rows;y++)
+	{
+		for(x=0;x<img.cols;x++)
+		{
+			if(img.data[y*img.step+x*img.elemSize()] != 0 )
+			{
+				if((y<correctMouseFRPt.y+10)&&(y>correctMouseFRPt.y-10))
+				{
+					if(nearest.x > x){
+						nearest = cv::Point(x,y);
+					}
+				}
+			}
+		}// x
+	}//y
+	return nearest.x - correctMouseFRPt.x;
+}
+
+int RaspiCam::calcNearestFrontWallPt(cv::Mat img, cv::Point& nearest)
+{
+	nearest = cv::Point(0,0);
+	int x, y;
+	for(y=0;y<img.rows;y++)
+	{
+		for(x=0;x<img.cols;x++)
+		{
+			if(img.data[y*img.step+x*img.elemSize()] != 0 )
+			{
+				if((x<correctMouseFPt.x+10)&&(x>correctMouseFPt.x-10))
+				{
+					if(nearest.y < y){
+						nearest = cv::Point(x,y);
+					}
+				}
+			}
+		}// x
+	}//y
+	return correctMouseFPt.y - nearest.y;
+}
 
 // Thinning
 void thinningIte(cv::Mat& img, int pattern)
@@ -265,7 +380,6 @@ int calcFrontWallGradient(cv::Mat& img)
 }
 
 
-
 // Calc Side Wall Gradient
 int calcSideWallGradient(cv::Mat& img)
 {
@@ -316,15 +430,39 @@ int calcSideWallGradient(cv::Mat& img)
 
 
 // Get Wall Data
-void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
+void RaspiCam::getFrontWallData(int *wall, EstimatedErrors *mouseErr)
 {
-	// Capture
-	Camera.grab();
-	Camera.retrieve(srcImg);
+	// Roi
+	cv::Mat tmpFrontRoi = srcImg(frontProcRect);
+	frontRoi = tmpFrontRoi.clone();
+
+	// BGR to HSV
+	cv::cvtColor(frontRoi, frontRoi, CV_BGR2HSV);
 	
-	// Flip
-	cv::flip(srcImg, srcImg, -1);
+	// Red Light filter
+	cv::inRange(frontRoi, cv::Scalar(150, 75, 30), cv::Scalar(195, 255, 255), frontBinImg);
 	
+	// Morphology(Opening)
+	cv::erode(frontBinImg, frontBinImg, cv::Mat(), cv::Point(-1, -1), 3);
+	cv::dilate(frontBinImg, frontBinImg, cv::Mat(), cv::Point(-1, -1), 3);
+	
+	// Estimate Position & Rotation
+	// Roi Around Pillar
+	mouseErr->y = calcNearestFrontWallPt(frontBinImg, nearestFrontWallPt);
+	//cout << "mouseErr.x:"  << mouseErr->x << endl;
+	cout << "mouseErr.y:"  << mouseErr->y << endl;
+	tmpFrontRoi = frontBinImg(cv::Rect(nearestFrontWallPt.x-(pillarSize.width*0.5), 0, pillarSize.height,frontBinImg.rows));
+	cout << "frontThinRoi" << endl;
+	frontThinRoi = tmpFrontRoi.clone();
+	
+	// Thinning
+	thinning(frontThinRoi, frontThinRoi);
+	// Calc Left Wall Gradient
+	mouseErr->degree = calcFrontWallGradient(frontThinRoi);
+}
+
+void RaspiCam::getSideWallData(int *wall, EstimatedErrors *mouseErr)
+{
 	// Roi
 	cv::Mat tmpLeftRoi = srcImg(leftProcRect);
 	cv::Mat tmpRightRoi = srcImg(rightProcRect);
@@ -336,24 +474,21 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	cv::cvtColor(rightRoi, rightRoi, CV_BGR2HSV);
 
 	// Red Light filter
-	cv::inRange(leftRoi, cv::Scalar(150, 75, 0), cv::Scalar(195, 255, 255), leftBinImg);
-	cv::inRange(rightRoi, cv::Scalar(150, 75, 0), cv::Scalar(195, 255, 255), rightBinImg);
+	cv::inRange(leftRoi, cv::Scalar(150, 75, 30), cv::Scalar(195, 255, 255), leftBinImg);
+	cv::inRange(rightRoi, cv::Scalar(150, 75, 30), cv::Scalar(195, 255, 255), rightBinImg);
 
 	// Morphology(Opening)
 	cv::erode(leftBinImg, leftBinImg, cv::Mat(), cv::Point(-1, -1), 3);
 	cv::dilate(leftBinImg, leftBinImg, cv::Mat(), cv::Point(-1, -1), 3);
-	//cv::erode(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
-	//cv::dilate(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
+	cv::erode(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
+	cv::dilate(rightBinImg, rightBinImg, cv::Mat(), cv::Point(-1, -1), 3);
 	
 	// Calc Wall Center
-	//frontWallArea	= calcCenter(frontRoi, frontWallCenter);
-	leftWallArea	= calcCenter(leftBinImg, leftWallCenter);
-	rightWallArea	= calcCenter(rightBinImg, rightWallCenter);
-	//frontWallCenter = cv::Point(frontWallCenter.x+FBW-15,frontWallCenter.y); 
-	leftWallCenter 	= cv::Point(leftWallCenter.x,leftWallCenter.y+LBW); 
-	rightWallCenter = cv::Point(rightWallCenter.x+(imgWidth-rightRoi.cols),rightWallCenter.y+RBW); 
+	leftWallArea	= calcSideWallCenter(leftBinImg, leftWallCenterPt);
+	rightWallArea	= calcSideWallCenter(rightBinImg, rightWallCenterPt);
+	leftWallCenterPt = cv::Point(leftWallCenterPt.x,leftWallCenterPt.y+LBW); 
+	rightWallCenterPt = cv::Point(rightWallCenterPt.x+(imgWidth-rightRoi.cols),rightWallCenterPt.y+RBW); 
 	if(leftWallArea  >= correctLeftWallArea) { wall[0] = 1; }
-	//if(frontWallArea >= correctFrontWallArea){ wall[1] = 1; }
 	if(rightWallArea >= correctRightWallArea){ wall[2] = 1; }
 	
 		
@@ -365,35 +500,56 @@ void RaspiCam::getWallData(int *wall, EstimatedErrors *mouseErr)
 	rightPillarRoi = tmpRightPillarRoi.clone();
 	
 	// Calc SideWall Gradient
+	int errLX = 99999, errLDeg=0;
+	int errRX = 99999, errRDeg=0;
 	if(leftWallArea > rightWallArea)
 	{
 		// Thinning
 		thinning(leftPillarRoi, leftPillarRoi);
 		// Calc Left Wall Gradient
-		mouseErr->degree = calcSideWallGradient(leftPillarRoi);
+	
+		errLX = calcNearestLeftWallPt(leftBinImg, nearestLeftWallPt);
+		errLDeg = calcSideWallGradient(leftPillarRoi);
 	}
 	else
 	{
 		// Thinning
 		thinning(rightPillarRoi, rightPillarRoi);
 		// Calc Right Wall Gradient
-		mouseErr->degree = calcSideWallGradient(rightPillarRoi);
+		
+		
+		errRX = calcNearestRightWallPt(rightBinImg, nearestRightWallPt);
+		errRDeg = calcSideWallGradient(rightPillarRoi);
 	}
+
+	if(errLX < errRX)
+	{	
+		mouseErr->x = errLX;
+		mouseErr->degree = errLDeg;
+	}
+	else
+	{
+		mouseErr->x = errRX;
+		mouseErr->degree = errRDeg;
+	}
+
 	
 	// DEBUG
 	dstImg = srcImg.clone();
-	cv::circle(dstImg, correctMousePt, 5, cv::Scalar(0,0,255), -1);
-	if(wall[0] == 1){ cv::circle(dstImg, leftWallCenter, 5, cv::Scalar(0,255,0), -1);}
-	if(wall[2] == 1){ cv::circle(dstImg, rightWallCenter, 5, cv::Scalar(0,255,05), -1);}
+	cv::circle(dstImg, correctMouseCenterPt, 5, cv::Scalar(0,0,255), -1);
+	if(wall[0] == 1){ cv::circle(dstImg, leftWallCenterPt, 5, cv::Scalar(0,255,0), -1);}
+	if(wall[2] == 1){ cv::circle(dstImg, rightWallCenterPt, 5, cv::Scalar(0,255,05), -1);}
 	cv::Point estMousePt;
-	estMousePt.x = (rightWallCenter.x+leftWallCenter.x) * 0.5;
-	estMousePt.y = (rightWallCenter.y+leftWallCenter.y) * 0.5;
+	estMousePt.x = (rightWallCenterPt.x+leftWallCenterPt.x) * 0.5;
+	estMousePt.y = (rightWallCenterPt.y+leftWallCenterPt.y) * 0.5;
 	cv::circle(dstImg, estMousePt, 5, cv::Scalar(0,255,0), -1);
 	cv::circle(dstImg, leftPillarPt, 5, cv::Scalar(255,0,0), -1);
 	cv::circle(dstImg, rightPillarPt, 5, cv::Scalar(255,0,0), -1);
-	/*
-	cout << "wall[0]:" << wall[0] << " Area:" << leftWallArea	<< " leftWallCenter" << leftWallCenter << endl;
-	cout << "wall[2]:" << wall[2] << " Area:" << rightWallArea	<< " rightWallCenter" << rightWallCenter << endl;
+
+	cv::circle(dstImg, rightPillarPt, 5, cv::Scalar(255,0,0), -1);
+	///*
+	cout << "wall[0]:" << wall[0] << " Area:" << leftWallArea	<< " leftWallCenterPt" << leftWallCenterPt << endl;
+	cout << "wall[2]:" << wall[2] << " Area:" << rightWallArea	<< " rightWallCenterPt" << rightWallCenterPt << endl;
 	cout << "mouseErr->x:" << mouseErr->x <<endl;
 	cout << "mouseErr->y:" << mouseErr->y <<endl;
 	cout << "mouseErr->degree:" << mouseErr->degree <<endl;
