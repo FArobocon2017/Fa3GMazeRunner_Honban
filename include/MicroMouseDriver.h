@@ -2,15 +2,15 @@
 
 #include "Motor.h"
 
-#define	STEP_ANG				0.9		//ƒ‚[ƒ^‚ª1ƒXƒeƒbƒv•Ó‚è‚É‰ñ“]‚·‚éŠp“x
-#define	STEP_SLOW				200		//1•b‚ ‚½‚è‚Éƒ‚[ƒ^[‚É—^‚¦‚éƒXƒeƒbƒv”
-#define	STEP_MIDDLE				400		//1•b‚ ‚½‚è‚Éƒ‚[ƒ^[‚É—^‚¦‚éƒXƒeƒbƒv”
-#define	STEP_FAST				1500		//1•b‚ ‚½‚è‚Éƒ‚[ƒ^[‚É—^‚¦‚éƒXƒeƒbƒv”
-#define	PI					    3.14159	//ƒÎ
-#define	WHEEL_RADIUS				47		//Ô—Ö‚Ì’¼Œa(mm)
-#define	DEGREE					360		//360‹
-#define	BLOCK					180		//1ƒuƒƒbƒN‚Ì‘å‚«‚³(mm)
-#define	WHEEL_AXLE				95		//Ô²‚Ì’·‚³(mm)
+#define	STEP_ANG				0.9		//ï¿½ï¿½ï¿½[ï¿½^ï¿½ï¿½1ï¿½Xï¿½eï¿½bï¿½vï¿½Ó‚ï¿½É‰ï¿½]ï¿½ï¿½ï¿½ï¿½pï¿½x
+#define	STEP_SLOW				200		//1ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éƒï¿½ï¿½[ï¿½^ï¿½[ï¿½É—^ï¿½ï¿½ï¿½ï¿½Xï¿½eï¿½bï¿½vï¿½ï¿½
+#define	STEP_MIDDLE				400		//1ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éƒï¿½ï¿½[ï¿½^ï¿½[ï¿½É—^ï¿½ï¿½ï¿½ï¿½Xï¿½eï¿½bï¿½vï¿½ï¿½
+#define	STEP_FAST				1500		//1ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éƒï¿½ï¿½[ï¿½^ï¿½[ï¿½É—^ï¿½ï¿½ï¿½ï¿½Xï¿½eï¿½bï¿½vï¿½ï¿½
+#define	PI					    3.14159	//ï¿½ï¿½
+#define	WHEEL_RADIUS				47		//ï¿½Ô—Ö‚Ì’ï¿½ï¿½a(mm)
+#define	DEGREE					360		//360ï¿½ï¿½
+#define	BLOCK					180		//1ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½Ì‘å‚«ï¿½ï¿½(mm)
+#define	WHEEL_AXLE				95		//ï¿½Ôï¿½ï¿½Ì’ï¿½ï¿½ï¿½(mm)
 #define	RADIAN_TO_ANG				57.2958		
 #define	ANG_TO_RADIAN				0.0174		
 #define	HOSEI5					5		
@@ -22,13 +22,31 @@
 class MicroMouseDriver
 {
 	Motor motor;
+	mutable std::mutex m_mutex;
+	int m_lVal, m_rVal;
 	int calculateSleepTime(int distance, int stepNum);
 	int calculateTurnSleepTime(int turnDegree, int stepNum);
 
 public:
-	MicroMouseDriver() {};
+	MicroMouseDriver() : m_lVal(0), m_rVal(0){};
 	~MicroMouseDriver() {};
 
+	void setMotor(int lVal, int rVal)
+	{
+		std::unique_lock<std::mutex> lock(m_mutex);
+		m_lVal = lVal;
+		m_rVal = rVal;
+	}
+
+	void getMotor(int& lVal, int& rVal) const
+	{
+		std::unique_lock<std::mutex> lock(m_mutex);
+		lVal = m_lVal;
+		rVal = m_rVal;
+	}
+
+	void adjust(int lDiff, int rDiff);
+	void controlMotorPrecisely(int sleepTime);
 	void stop();
 	void driveNBlock(int N);
 	void riverseNBlock(int N);
