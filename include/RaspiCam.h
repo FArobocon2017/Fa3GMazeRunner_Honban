@@ -69,6 +69,11 @@ private:
 	cv::Mat leftPillarRoi, rightPillarRoi;
 	cv::Mat frontThinRoi;
 
+	// Correct Distance
+	int correctFrontDistance;
+	int correctLeftDistance;
+	int correctRightDistance;
+	
 public:
 	RaspiCam();
 	~RaspiCam();
