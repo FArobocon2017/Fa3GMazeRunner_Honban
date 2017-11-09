@@ -95,41 +95,6 @@ namespace{
 	}
 }
 
-void MazeRunner::startMonitorCamera()
-{
-	TactSW tactsw;
-	int tswSts0 = 1;
-	WallDetector wallDetector;
-	RaspiCam raspiCam;
-	raspiCam.open();
-	raspiCam.createWindow();
-	
-	// タクトスイッチ1が0になるまで1秒間隔で画像を撮り続ける
-	while(tswSts0!=0)
-	{
-		// 壁情報（左,前,右）
-		int wall[3] = {0};
-		EstimatedErrors mouseErr{0,0,0};
-		// 
-		tswSts0 = tactsw.getTactSwSts0();
-		
-		if(this->getCameraPermission())
-		{
-			//cout << "getWallData" << endl;
-			raspiCam.capture();
-			raspiCam.getSideWallData(wall, &mouseErr);
-			raspiCam.showImg();
-			wallDetector.getWallData(wall);
-			if(wall[1] == 1)
-			{
-				raspiCam.getFrontWallData(wall, &mouseErr);
-			}
-			this->setWall(wall, mouseErr);
-			
-			std::this_thread::sleep_for(std::chrono::milliseconds(20));	// 20ミリ秒
-		}
-	}
-}
 
 bool MazeRunner::calibration()
 {
@@ -158,6 +123,49 @@ bool MazeRunner::calibration()
 	}
 
 	return true;
+}
+
+
+void MazeRunner::startMonitorCamera()
+{
+	TactSW tactsw;
+	int tswSts0 = 1;
+	WallDetector wallDetector;
+	RaspiCam raspiCam;
+	raspiCam.open();
+	raspiCam.createWindow();
+	
+	// タクトスイッチ1が0になるまで1秒間隔で画像を撮り続ける
+	while(tswSts0!=0)
+	{
+		// 壁情報（左,前,右）
+		int wall[3] = {0};
+		EstimatedErrors mouseErr{0,0,0};
+		// 
+		tswSts0 = tactsw.getTactSwSts0();
+		
+		if(this->getCameraPermission())
+		{
+			//cout << "getWallData" << endl;
+			raspiCam.capture();
+			raspiCam.getSideWallData(wall, &mouseErr);
+			wallDetector.getWallData(wall);
+			if(wall[1] == 1)
+			{
+				raspiCam.getFrontWallData(wall, &mouseErr);
+			}
+			this->setWall(wall, mouseErr);
+			
+			// DEBUG
+			raspiCam.showImg();
+			cout << "mouseErr.x:" << mouseErr.x <<endl;
+			cout << "mouseErr.y:" << mouseErr.y <<endl;
+			cout << "mouseErr.degree:" << mouseErr.degree <<endl;
+			
+			// WAIT
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		}
+	}
 }
 
 
