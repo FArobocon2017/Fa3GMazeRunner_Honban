@@ -25,11 +25,12 @@ class MicroMouseDriver
 	Motor motor;
 	mutable std::mutex m_mutex;
 	int m_lVal, m_rVal;
+	bool m_bStopCorrection;
 	int calculateSleepTime(int distance, int stepNum);
 	int calculateTurnSleepTime(int turnDegree, int stepNum);
 
 public:
-	MicroMouseDriver() : m_lVal(0), m_rVal(0){};
+	MicroMouseDriver() : m_lVal(0), m_rVal(0), m_bStopCorrection(false){};
 	~MicroMouseDriver() {};
 
 	void setMotor(int lVal, int rVal)

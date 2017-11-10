@@ -96,6 +96,7 @@ void MicroMouseDriver::controlMotorPrecisely(int sleepTime)
 // 左右に調整量を加える
 void MicroMouseDriver::adjust(int lDiff, int rDiff)
 {
+	if(m_bStopCorrection) return;
 	int l,r;
 	this->getMotor(l,r);
 	l+=lDiff;
@@ -128,10 +129,12 @@ void MicroMouseDriver::riverseNBlock(int N)
 void MicroMouseDriver::spinLeft()
 {
 	cout << "spinLeft"<< endl;
+	m_bStopCorrection = true;
 	int sleepTime = (int)calculateTurnSleepTime(80, STEP_MIDDLE);
 	this->setMotor(-STEP_MIDDLE-HOSEI10, STEP_MIDDLE+HOSEI10);
 	controlMotorPrecisely(sleepTime);
 	stop();
+	m_bStopCorrection = false;
 }
 
 
@@ -139,10 +142,12 @@ void MicroMouseDriver::spinLeft()
 void MicroMouseDriver::spinRight()
 {
 	cout << "spinRight"<< endl;
+	m_bStopCorrection = true;
 	int sleepTime = (int)calculateTurnSleepTime(80, STEP_MIDDLE);
 	this->setMotor(STEP_MIDDLE+HOSEI10, -STEP_MIDDLE-HOSEI10);
 	controlMotorPrecisely(sleepTime);
 	stop();
+	m_bStopCorrection = false;
 }
 
 
@@ -150,10 +155,12 @@ void MicroMouseDriver::spinRight()
 void MicroMouseDriver::inverse()
 {
 	cout << "inverse"<< endl;
+	m_bStopCorrection = true;
 	int sleepTime = (int)calculateTurnSleepTime(175, STEP_MIDDLE);
 	this->setMotor(STEP_MIDDLE, -STEP_MIDDLE);
 	controlMotorPrecisely(sleepTime);
 	stop();
+	m_bStopCorrection = false;
 }
 
 
@@ -248,12 +255,12 @@ void MicroMouseDriver::turnNAngle(int angle)
 	if(angle < 0)
 	{
 		sleepTime = (int)calculateTurnSleepTime(-angle, STEP_MIDDLE);
-		this->setMotor(STEP_MIDDLE, -STEP_MIDDLE);
+		this->setMotor(-STEP_MIDDLE, STEP_MIDDLE);
 	}
 	else if(angle > 0)
 	{
 		sleepTime = (int)calculateTurnSleepTime(angle, STEP_MIDDLE);
-		this->setMotor(-STEP_MIDDLE, STEP_MIDDLE);
+		this->setMotor(STEP_MIDDLE, -STEP_MIDDLE);
 	}
 
 	controlMotorPrecisely(sleepTime);

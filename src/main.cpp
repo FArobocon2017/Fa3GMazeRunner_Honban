@@ -20,6 +20,8 @@ Agent agent(maze);
 
 int main()
 {
+	cout << "--Start Maze Runner--" << endl;
+	
 	// 壁情報（東西南北）
 	WallDetector wallDetector;
 		
@@ -32,52 +34,54 @@ int main()
 	// 座標変換用
 	MazeRunner mazeRunner;
 	
-	//cout << "call calib" << endl;
 	// キャリブレーション実施
 	if(!mazeRunner.calibration())
 	{
 		return 0;
 	}
+	
 	// カメラ監視スレッド作成
+	cout << "--Start Camera Thread--" << endl;
 	ThreadPool pool(1);
 	auto ftr = pool.enqueue([&mazeRunner](){
 		mazeRunner.startMonitorCamera();
 	});
-
+	
+	/*
+	// dbg
+	mazeRunner.dbg();
+	ftr.wait();
+	return 0;
+	//*/
 	
 	// 迷路探索開始
 	usleep(2000000);
+	cout << "--Start Search Process--" << endl;
 	mazeRunner.exploreMaze(agent);
 	
 	//ロボットを停止させ、スタートする向きに戻す
 	mazeRunner.robotPositionInit();
+	cout << "" << endl;
+	cout << "--End Search Process--" << endl;
 	usleep(3000000);
 	
 	//最短経路の計算 割と時間がかかる(数秒)
 	//引数は斜め走行をするかしないか
 	//trueだと斜め走行をする
+	cout << "" << endl;
+	cout << "--Calculate OperationList--" << endl;
 	agent.calcRunSequence(false);
-	
-	// 計測走行
-	cout << "Opelation" << endl;
+
 	//コマンドリストみたいなやつを取り出す
+	cout << "" << endl;
+	cout << "--Run Sequence--" << endl;
 	const OperationList &runSequence = agent.getRunSequence();
+	//mazeRunner.robotMoveSequence(runSequence); //robotMode関数はOperation型を受け取ってそれを実行する関数
 
-	//Operationを先頭から順番に実行していく
-	for (size_t i=0;i<runSequence.size();i++) 
-	{
-		//Operationの実行が終わるまで待つ(nマス進んだ,右に曲がった)
-		//while(!operationFinished());
-
-		//i番目のを実行
-		cout << "runSequence.size" << runSequence.size() << endl;
-		cout << "runSequence[" << i <<"]" << runSequence[i].op << ","<< static_cast<int16_t>(runSequence[i].n) << endl;
-		mazeRunner.robotMoveSequence(runSequence[i]); //robotMode関数はOperation型を受け取ってそれを実行する関数
-	}
 	ftr.wait();
 	
 	//fin
-	cout << "finished." << endl;
+	cout << "--Finished--" << endl;
 
 	return 0;
 }

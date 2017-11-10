@@ -67,5 +67,5 @@ public:
 	void robotMove(Direction nowDir, Direction nextDir);
 	void robotMoveSequence(Operation runSequence);
 	void adjustMove(int x, int y, int degTheta);
-	void dbg();
+	void dbg(); // !< For Debug
 };
