@@ -157,17 +157,25 @@ void MazeRunner::startMonitorCamera()
 			this->setWall(wall, mouseErr);
 			
 
-			raspiCam.showImg();
-			
-			
-			///*
+			//raspiCam.showImg();
+
 			// DEBUG
 			//cout << "mouseErr.x:" << mouseErr.x <<endl;
 			//cout << "mouseErr.y:" << mouseErr.y <<endl;
 			//cout << "mouseErr.degree:" << mouseErr.degree <<endl;
-			//*/
+			if(mouseErr.x >10)
+			{
+				m_microMouseDriver.adjust(HOSEI10, 0);
+			}
+			else if(mouseErr.x <-10)
+			{
+				m_microMouseDriver.adjust(0, HOSEI10);
+			}
+			if(mouseErr. >10)
+			{
+				m_microMouseDriver.adjust(HOSEI10, 0);
+			}
 			
-			//m_microMouseDriver.adjust(HOSEI5, 0));
 			
 			// WAIT
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
