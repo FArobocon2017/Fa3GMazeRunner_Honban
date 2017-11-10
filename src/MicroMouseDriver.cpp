@@ -76,10 +76,9 @@ void MicroMouseDriver::stop()
 void MicroMouseDriver::controlMotorPrecisely(int sleepTime)
 {
 	std::chrono::system_clock::time_point start,end;
-	std::chrono::milliseconds elapsed(0);
 	start = std::chrono::system_clock::now();
 
-	while(sleepTime<elapsed)
+	while(1)
 	{
 		int lVal, rVal;
 		this->getMotor(lVal,rVal);
@@ -88,7 +87,8 @@ void MicroMouseDriver::controlMotorPrecisely(int sleepTime)
 		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 		
 		end = std::chrono::system_clock::now();
-		elapsed = std::chrono::duration_cast< std::chrono::milliseconds >(end - start).count();
+		auto elapsed = std::chrono::duration_cast< std::chrono::milliseconds >(end - start).count();
+		if(sleepTime<elapsed) break;
 	}
     
 }

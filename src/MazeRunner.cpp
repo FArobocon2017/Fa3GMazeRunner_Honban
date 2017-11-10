@@ -157,10 +157,10 @@ void MazeRunner::startMonitorCamera()
 			this->setWall(wall, mouseErr);
 			
 			// DEBUG
-			raspiCam.showImg();
-			cout << "mouseErr.x:" << mouseErr.x <<endl;
-			cout << "mouseErr.y:" << mouseErr.y <<endl;
-			cout << "mouseErr.degree:" << mouseErr.degree <<endl;
+			//raspiCam.showImg();
+			//cout << "mouseErr.x:" << mouseErr.x <<endl;
+			//cout << "mouseErr.y:" << mouseErr.y <<endl;
+			//cout << "mouseErr.degree:" << mouseErr.degree <<endl;
 			
 			// WAIT
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));

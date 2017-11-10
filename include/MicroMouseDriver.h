@@ -1,16 +1,17 @@
 #pragma once
-
+#include <thread>
+#include <mutex>
 #include "Motor.h"
 
-#define	STEP_ANG				0.9		//ï¿½ï¿½ï¿½[ï¿½^ï¿½ï¿½1ï¿½Xï¿½eï¿½bï¿½vï¿½Ó‚ï¿½É‰ï¿½]ï¿½ï¿½ï¿½ï¿½pï¿½x
-#define	STEP_SLOW				200		//1ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éƒï¿½ï¿½[ï¿½^ï¿½[ï¿½É—^ï¿½ï¿½ï¿½ï¿½Xï¿½eï¿½bï¿½vï¿½ï¿½
-#define	STEP_MIDDLE				400		//1ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éƒï¿½ï¿½[ï¿½^ï¿½[ï¿½É—^ï¿½ï¿½ï¿½ï¿½Xï¿½eï¿½bï¿½vï¿½ï¿½
-#define	STEP_FAST				1500		//1ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éƒï¿½ï¿½[ï¿½^ï¿½[ï¿½É—^ï¿½ï¿½ï¿½ï¿½Xï¿½eï¿½bï¿½vï¿½ï¿½
-#define	PI					    3.14159	//ï¿½ï¿½
-#define	WHEEL_RADIUS				47		//ï¿½Ô—Ö‚Ì’ï¿½ï¿½a(mm)
-#define	DEGREE					360		//360ï¿½ï¿½
-#define	BLOCK					180		//1ï¿½uï¿½ï¿½ï¿½bï¿½Nï¿½Ì‘å‚«ï¿½ï¿½(mm)
-#define	WHEEL_AXLE				95		//ï¿½ÔŽï¿½ï¿½Ì’ï¿½ï¿½ï¿½(mm)
+#define	STEP_ANG				0.9		//E½E½E½[E½^E½E½1E½XE½eE½bE½vE½Ó‚ï¿½É‰ï¿½]E½E½E½E½pE½x
+#define	STEP_SLOW				200		//1E½bE½E½E½E½E½E½ÉE¿½E½[E½^E½[E½É—^E½E½E½E½XE½eE½bE½vE½E½
+#define	STEP_MIDDLE				400		//1E½bE½E½E½E½E½E½ÉE¿½E½[E½^E½[E½É—^E½E½E½E½XE½eE½bE½vE½E½
+#define	STEP_FAST				1500		//1E½bE½E½E½E½E½E½ÉE¿½E½[E½^E½[E½É—^E½E½E½E½XE½eE½bE½vE½E½
+#define	PI					    3.14159	//E½E½
+#define	WHEEL_RADIUS				47		//E½Ô—Ö‚Ì’ï¿½E½a(mm)
+#define	DEGREE					360		//360E½E½
+#define	BLOCK					180		//1E½uE½E½E½bE½NE½Ì‘å‚«E½E½(mm)
+#define	WHEEL_AXLE				95		//E½ÔŽï¿½E½Ì’ï¿½E½E½(mm)
 #define	RADIAN_TO_ANG				57.2958		
 #define	ANG_TO_RADIAN				0.0174		
 #define	HOSEI5					5		
