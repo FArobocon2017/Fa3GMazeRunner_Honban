@@ -171,11 +171,6 @@ void MazeRunner::startMonitorCamera()
 			{
 				m_microMouseDriver.adjust(0, HOSEI10);
 			}
-			if(mouseErr. >10)
-			{
-				m_microMouseDriver.adjust(HOSEI10, 0);
-			}
-			
 			
 			// WAIT
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
