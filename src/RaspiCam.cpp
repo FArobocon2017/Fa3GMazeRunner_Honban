@@ -41,9 +41,9 @@ RaspiCam::RaspiCam():
 	correctMouseFRPt(correctMouseCenterPt.x + 50, correctMouseCenterPt.y - 40),
 
 	// Pillar Area
-	leftPillarPt (correctMouseCenterPt.x-72, correctMouseCenterPt.y-18),
-	rightPillarPt(correctMouseCenterPt.x+102,correctMouseCenterPt.y-25),
-	pillarSize(60,60),
+	leftPillarPt (correctMouseCenterPt.x- 72, correctMouseCenterPt.y- 18),
+	rightPillarPt(correctMouseCenterPt.x+102, correctMouseCenterPt.y- 25),
+	pillarSize( 60, 60),
 
 	// Correct Distance
 	correctFrontDistance(correctMouseFPt.y - correctFrontWallMidPt.y),
@@ -111,43 +111,34 @@ void RaspiCam::capture()
 // Create Window
 void RaspiCam::createWindow()
 {
-	cv::namedWindow("srcImg", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("frontRoi", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("leftRoi", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("rightRoi", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("frontBinImg", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("srcImg", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("frontRoi", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("leftRoi", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("rightRoi", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("frontBinImg", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("leftBinImg", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("rightBinImg", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("frontThinRoi", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("leftPillarRoi", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("rightPillarRoi", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("dstImg", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("frontThinRoi", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("leftPillarRoi", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("rightPillarRoi", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("dstImg", CV_WINDOW_AUTOSIZE);
 }
 
 
 // Show Image
 void RaspiCam::showImg()
 {
-	cv::imshow("srcImg",srcImg);
-	if(frontRoi.data != NULL)
-	{
-		cv::imshow("frontRoi",frontRoi);
-	}
-	cv::imshow("leftRoi",leftRoi);
-	cv::imshow("rightRoi",rightRoi);
-	if(frontBinImg.data != NULL)
-	{
-		cv::imshow("frontBinImg",frontBinImg);
-	}
+	//cv::imshow("srcImg",srcImg);
+	//cv::imshow("frontRoi",frontRoi);
+	//cv::imshow("leftRoi",leftRoi);
+	//cv::imshow("rightRoi",rightRoi);
+	//cv::imshow("frontBinImg",frontBinImg);
 	cv::imshow("leftBinImg",leftBinImg);
 	cv::imshow("rightBinImg",rightBinImg);
-	if(frontThinRoi.data != NULL)
-	{
-		cv::imshow("frontThinRoi",frontThinRoi);
-	}
-	cv::imshow("leftPillarRoi",leftPillarRoi);
-	cv::imshow("rightPillarRoi",rightPillarRoi);
-	cv::imshow("dstImg",dstImg);
+	//cv::imshow("frontThinRoi",frontThinRoi);
+	//cv::imshow("leftPillarRoi",leftPillarRoi);
+	//cv::imshow("rightPillarRoi",rightPillarRoi);
+	//cv::imshow("dstImg",dstImg);
 	cv::waitKey(1);
 }
 
@@ -381,14 +372,25 @@ int calcFrontWallGradient(cv::Mat& img)
 	cv::line(img, lineSt, lineEd, 128);
 	int diffx = lineEd.x - lineSt.x;
 	int diffy = lineEd.y - lineSt.y;
+
 	if(diffx==0 || diffy==0)
 	{
 		degree = 0;
 	}
 	else 
 	{
-		degree = atan2(diffy, diffx) * (180.0/M_PI); 
+		degree = (-1.0) * atan2(diffy, diffx) * (180.0/M_PI); 
 	}
+	
+	if(degree > 90)
+	{
+		degree -= 180.0;
+	}
+	else if(degree < -90)
+	{
+		degree += 180.0;
+	}
+	
 	return (int)(degree+0.5);
 }
 
@@ -434,6 +436,10 @@ int calcSideWallGradient(cv::Mat& img)
 	{
 		degree -= 180.0;
 	}
+	else if(degree < -90)
+	{
+		degree += 180.0;
+	}
 	
 	return (int)(degree+0.5);
 }
@@ -464,20 +470,10 @@ void RaspiCam::getFrontWallData(int *wall, EstimatedErrors *mouseErr)
 	mouseErr->y = measureFrontDistance - correctFrontDistance;
 
 	// Calc Left Wall Gradient
-	if(wall[0]==0 && wall[0]==1 && wall[2]==0)
+	if(wall[0]==0 && wall[1]==1 && wall[2]==0)
 	{
 		// Thinning
-		int lf = nearestFrontWallPt.x-(pillarSize.width*0.5);
-		int rf = nearestFrontWallPt.x+(pillarSize.width*0.5);
-		if(lf > 0)
-		{
-			lf = 0;
-		}
-		if(rf < frontBinImg.cols)
-		{
-			rf = frontBinImg.cols;
-		}
-		cv::Mat tmpFrontBinRoi = frontBinImg(cv::Rect(0, 0, pillarSize.width, frontBinImg.rows));
+		cv::Mat tmpFrontBinRoi = frontBinImg(cv::Rect(nearestFrontWallPt.x, 0, pillarSize.width, frontBinImg.rows));
 		frontThinRoi = tmpFrontBinRoi.clone();
 		thinning(frontThinRoi, frontThinRoi);
 		mouseErr->degree = calcFrontWallGradient(frontThinRoi);

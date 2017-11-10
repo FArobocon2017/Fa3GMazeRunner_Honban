@@ -66,7 +66,7 @@ void WallDetector::getWallData(int *wall)
 	{
 		wall[1] = 1;
 	}
-	cout  << "sen0:" << senSts[0] << " sen3:" << senSts[3] << endl;
+	//cout  << "sen0:" << senSts[0] << " sen3:" << senSts[3] << endl;
 }
 
 // 光センサの取得

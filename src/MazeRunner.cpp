@@ -156,11 +156,36 @@ void MazeRunner::startMonitorCamera()
 			}
 			this->setWall(wall, mouseErr);
 			
-			// DEBUG
+
 			//raspiCam.showImg();
+
+			// DEBUG
 			//cout << "mouseErr.x:" << mouseErr.x <<endl;
 			//cout << "mouseErr.y:" << mouseErr.y <<endl;
 			//cout << "mouseErr.degree:" << mouseErr.degree <<endl;
+			if(mouseErr.x > 10)
+			{
+				m_microMouseDriver.adjust(HOSEI10, 0);
+			}
+			else if(mouseErr.x < -10)
+			{
+				m_microMouseDriver.adjust(0, HOSEI10);
+			}
+			
+			if(mouseErr.y > 20)
+			{
+				//m_microMouseDriver.getMotor(l,r);
+				m_microMouseDriver.adjust( -40, -40);
+			}
+			else if(mouseErr.y > 10)
+			{
+				m_microMouseDriver.adjust( -20, -20);
+			}
+			else if(mouseErr.y < -10)
+			{
+				m_microMouseDriver.adjust( HOSEI10, HOSEI10 );
+			}
+			
 			
 			// WAIT
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -211,6 +236,9 @@ void MazeRunner::exploreMaze(Agent& agent)
 
 	// マウスの現在位置（X,Y）
 	IndexVec nowPos(0,0);
+	
+	// マウスの現在の進行方向
+	Direction nowDir(NORTH);
 
 	//前回のAgentの状態を保存しとく
 	Agent::State prevState = Agent::IDLE;
@@ -229,8 +257,6 @@ void MazeRunner::exploreMaze(Agent& agent)
 		// 誤差情報の取得（カメラ機能使用）
 		this->getWall(wall, &mouseErr);
 
-		// マウスの現在の進行方向
-		Direction nowDir(NORTH);
 
 		// 位置補正
 		if(loopNum > 0){
@@ -238,7 +264,6 @@ void MazeRunner::exploreMaze(Agent& agent)
 			 mouseErr.x << ", " <<
 			 mouseErr.y << ", " <<
 			 mouseErr.degree << endl;
-			//this->adjustMove(mouseErr.x, mouseErr.y, mouseErr.degree);
 		}
 		
 		// 壁情報変換（左前右　→　東西南北）
@@ -282,6 +307,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 		if (agent.getState() == Agent::SEARCHING_REACHED_GOAL)
 		{
 			agent.forceGotoStart();
+			usleep(300000);
 		}
 
 		//Agentの状態が探索中の場合は次に進むべき方向を取得する
@@ -429,44 +455,53 @@ void MazeRunner::robotMove(Direction nowDir, Direction nextDir)
 
 void MazeRunner::robotMoveSequence(Operation runSequence)
 {
-	int N = static_cast<int16_t>(runSequence.n);
-
-	switch(runSequence.op)
+	/*
+	cout << "runSequence.size" << runSequence.size()<< endl;
+	int opSize =　runSequence.size();
+	// opIdx番目のオペレーションを実行
+	for(int opIdx=0; opIdx<opSize; opIdx++)
 	{
-		// 直進
-		case Operation::OperationType::FORWARD:
-			m_microMouseDriver.driveNBlock(N);
-			break;
-		// 斜めに直進(普通の直進とは進む距離が違う)
-		case Operation::OperationType::FORWARD_DIAG:
-			break;
-		// 右に90度旋回
-		case Operation::OperationType::TURN_RIGHT90:
-			for(int i=0;i<N;i++)
-			{
-				m_microMouseDriver.spinRight();
-			}
-			break;
-		// 右に45度旋回
-		case Operation::OperationType::TURN_RIGHT45:
-			break;
-		// 左に90度旋回
-		case Operation::OperationType::TURN_LEFT90:
-			for(int i=0;i<N;i++)
-			{
-				m_microMouseDriver.spinLeft();
-			}
-			break;
-		// 	左に45度旋回
-		case Operation::OperationType::TURN_LEFT45:
-			break;
-		// 停止
-		case Operation::OperationType::STOP:
-			m_microMouseDriver.stop();
-			break;
-		default:
-			break;
+		cout << "runSequence[" << opIdx <<"]" << runSequence[opIdx].op << ","<< static_cast<int16_t>(runSequence[opIdx].n) << endl;
+		
+		int N = static_cast<int16_t>(runSequence[opIdx].n);
+		switch(runSequence[opIdx].op)
+		{
+			// 直進
+			case Operation::OperationType::FORWARD:
+				m_microMouseDriver.driveNBlock(N);
+				break;
+			// 斜めに直進(普通の直進とは進む距離が違う)
+			case Operation::OperationType::FORWARD_DIAG:
+				break;
+			// 右に90度旋回
+			case Operation::OperationType::TURN_RIGHT90:
+				for(int i=0;i<N;i++)
+				{
+					m_microMouseDriver.spinRight();
+				}
+				break;
+			// 右に45度旋回
+			case Operation::OperationType::TURN_RIGHT45:
+				break;
+			// 左に90度旋回
+			case Operation::OperationType::TURN_LEFT90:
+				for(int i=0;i<N;i++)
+				{
+					m_microMouseDriver.spinLeft();
+				}
+				break;
+			// 	左に45度旋回
+			case Operation::OperationType::TURN_LEFT45:
+				break;
+			// 停止
+			case Operation::OperationType::STOP:
+				m_microMouseDriver.stop();
+				break;
+			default:
+				break;
+		}
 	}
+	*/
 }
 
 
@@ -481,22 +516,18 @@ void MazeRunner::adjustMove(int x, int y, int degTheta)
 {
 	// 変数定義
 	MicroMouseDriver mRunner; // ドライバ
-
-	 // 角度をラジアンに変換
-	double radTheta = (degTheta * PI) / 180.0;
-
+	
+	// 角度をラジアンに変換
+	//double radTheta = (degTheta * PI) / 180.0;
+	double radTheta = degTheta;
+	
 	// 分岐（x,y,degThetaが許容範囲内)
 	if (abs(x) < xTolerance && abs(y) < yTolerance && abs(degTheta) < thetaTolerance)
 	{
 		return;	 // 何もしない
 	}
-
-	// 分岐(X方向ずれあり、角度ずれなし)
-	if (abs(x) > xTolerance && abs(degTheta) < thetaTolerance)
-	{
-		mRunner.slideMM(-x); // 車線変更
-		return;
-	}
+	
+	///*
 
 	// 他のパターン（前に詰まりそうで、後ろ側に空間があるパタン）
 	/// ①後ろ方向に移動
@@ -509,6 +540,8 @@ void MazeRunner::adjustMove(int x, int y, int degTheta)
     /// ③前進
 	double moveForward = (double)y - (moveBack * cos(radTheta));
 	mRunner.driveMM(moveForward);  // moveForward(mm)分だけ前に進む
+
+//*/
 
 	return; // 不要
 }
