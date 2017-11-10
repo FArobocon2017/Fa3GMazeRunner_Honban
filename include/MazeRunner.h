@@ -1,9 +1,10 @@
 #pragma once
-
+#include <memory>
 #include "Maze.h"
 #include "Operation.h"
 #include "RaspiCam.h"
 #include "ThreadPool.h"
+#include "MicroMouseDriver.h"
 
 class Agent;
 
@@ -16,6 +17,7 @@ class MazeRunner
 	bool m_cameraPermission = true;
 	int m_wall[3];
 	EstimatedErrors m_errors;
+	MicroMouseDriver m_microMouseDriver;
 
 	void setWall(int* wall, EstimatedErrors errors)
 	{

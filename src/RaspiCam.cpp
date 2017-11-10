@@ -473,18 +473,18 @@ void RaspiCam::getFrontWallData(int *wall, EstimatedErrors *mouseErr)
 		{
 			lf = 0;
 		}
-		if(rf < frontBinImg.col)
+		if(rf < frontBinImg.cols)
 		{
-			rf = frontBinImg.col;
+			rf = frontBinImg.cols;
 		}
-		cv::Mat tmpFrontBinRoi = frontBinImg(cv::Rect(, 0, pillarSize.width, frontBinImg.rows));
+		cv::Mat tmpFrontBinRoi = frontBinImg(cv::Rect(0, 0, pillarSize.width, frontBinImg.rows));
 		frontThinRoi = tmpFrontBinRoi.clone();
 		thinning(frontThinRoi, frontThinRoi);
 		mouseErr->degree = calcFrontWallGradient(frontThinRoi);
 	}
 
 	// DEBUG
-	cout << "nearestFrontWallPt:" << nearestFrontWallPt <<endl;
+	//cout << "nearestFrontWallPt:" << nearestFrontWallPt <<endl;
 }
 
 

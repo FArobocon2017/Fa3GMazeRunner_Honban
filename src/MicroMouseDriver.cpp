@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
+#include <chrono>
 
 #include "MicroMouseDriver.h"
 
@@ -10,7 +11,7 @@ using namespace std;
 
 //ロボットを直進させるときのスリープ時間を計算
 //double stepNum = ステップ数
-//return スリープさせる時間(micro sec)
+//return スリープさせる時間(milli sec)
 int MicroMouseDriver::calculateSleepTime(int distance, int stepNum)
 {
 	int sleepTime = 0;
@@ -33,7 +34,7 @@ int MicroMouseDriver::calculateSleepTime(int distance, int stepNum)
 	sleepTime = (1000000 * distance) / rotatioNum / wheelCircumference;
 	//cout << "sleepTime" << wheelCircumference << endl;
 
-	return sleepTime;
+	return sleepTime/1000;
 }
 
 
@@ -62,7 +63,7 @@ int MicroMouseDriver::calculateTurnSleepTime(int turnDegree, int stepNum)
 	//スリープさせる時間
 	sleepTime = (turnDistance * 1000000) / rotatioNum / wheelCircumference;
 
-	return sleepTime;
+	return sleepTime/1000;
 }
 
 
@@ -72,14 +73,43 @@ void MicroMouseDriver::stop()
 	motor.ctrMotorStop();
 }
 
+void MicroMouseDriver::controlMotorPrecisely(int sleepTime)
+{
+	std::chrono::system_clock::time_point start,end;
+	start = std::chrono::system_clock::now();
+
+	while(1)
+	{
+		int lVal, rVal;
+		this->getMotor(lVal,rVal);
+		motor.ctrMotorHz(lVal, rVal);
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		
+		end = std::chrono::system_clock::now();
+		auto elapsed = std::chrono::duration_cast< std::chrono::milliseconds >(end - start).count();
+		if(sleepTime<elapsed) break;
+	}
+    
+}
+
+// 左右に調整量を加える
+void MicroMouseDriver::adjust(int lDiff, int rDiff)
+{
+	int l,r;
+	this->getMotor(l,r);
+	l+=lDiff;
+	r+=rDiff;
+	this->setMotor(l,r);
+}
 
 //ロボットを指定ブロック数直進させる関数
 void MicroMouseDriver::driveNBlock(int N)
 {
 	cout << "driveNBlock = " << N << endl;
 	int sleepTime = (int)calculateSleepTime(BLOCK, STEP_MIDDLE)*N;
-	motor.ctrMotorHz(STEP_MIDDLE-HOSEI20, STEP_MIDDLE-HOSEI20);
-	usleep(sleepTime);
+	this->setMotor(STEP_MIDDLE-HOSEI20, STEP_MIDDLE-HOSEI20);
+	controlMotorPrecisely(sleepTime);
 	stop();
 }
 
@@ -89,8 +119,8 @@ void MicroMouseDriver::riverseNBlock(int N)
 {
 	cout << "riverseNBlock = " << N << endl;
 	int sleepTime = (int)calculateSleepTime(BLOCK, STEP_MIDDLE)*N;
-	motor.ctrMotorHz(-STEP_MIDDLE, -STEP_MIDDLE);
-	usleep(sleepTime);
+	this->setMotor(-STEP_MIDDLE, -STEP_MIDDLE);
+	controlMotorPrecisely(sleepTime);
 	stop();
 }
 
@@ -99,8 +129,8 @@ void MicroMouseDriver::spinLeft()
 {
 	cout << "spinLeft"<< endl;
 	int sleepTime = (int)calculateTurnSleepTime(80, STEP_MIDDLE);
-	motor.ctrMotorHz(-STEP_MIDDLE-HOSEI10, STEP_MIDDLE+HOSEI10);
-	usleep(sleepTime);
+	this->setMotor(-STEP_MIDDLE-HOSEI10, STEP_MIDDLE+HOSEI10);
+	controlMotorPrecisely(sleepTime);
 	stop();
 }
 
@@ -110,8 +140,8 @@ void MicroMouseDriver::spinRight()
 {
 	cout << "spinRight"<< endl;
 	int sleepTime = (int)calculateTurnSleepTime(80, STEP_MIDDLE);
-	motor.ctrMotorHz(STEP_MIDDLE+HOSEI10, -STEP_MIDDLE-HOSEI10);
-	usleep(sleepTime);
+	this->setMotor(STEP_MIDDLE+HOSEI10, -STEP_MIDDLE-HOSEI10);
+	controlMotorPrecisely(sleepTime);
 	stop();
 }
 
@@ -121,8 +151,8 @@ void MicroMouseDriver::inverse()
 {
 	cout << "inverse"<< endl;
 	int sleepTime = (int)calculateTurnSleepTime(175, STEP_MIDDLE);
-	motor.ctrMotorHz(STEP_MIDDLE, -STEP_MIDDLE);
-	usleep(sleepTime);
+	this->setMotor(STEP_MIDDLE, -STEP_MIDDLE);
+	controlMotorPrecisely(sleepTime);
 	stop();
 }
 
@@ -218,15 +248,15 @@ void MicroMouseDriver::turnNAngle(int angle)
 	if(angle < 0)
 	{
 		sleepTime = (int)calculateTurnSleepTime(-angle, STEP_MIDDLE);
-		motor.ctrMotorHz(STEP_MIDDLE, -STEP_MIDDLE);
+		this->setMotor(STEP_MIDDLE, -STEP_MIDDLE);
 	}
 	else if(angle > 0)
 	{
 		sleepTime = (int)calculateTurnSleepTime(angle, STEP_MIDDLE);
-		motor.ctrMotorHz(-STEP_MIDDLE, STEP_MIDDLE);
+		this->setMotor(-STEP_MIDDLE, STEP_MIDDLE);
 	}
 
-	usleep(sleepTime);
+	controlMotorPrecisely(sleepTime);
 
 	motor.ctrMotorStop();
 }

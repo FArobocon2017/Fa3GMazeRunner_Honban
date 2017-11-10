@@ -157,10 +157,10 @@ void MazeRunner::startMonitorCamera()
 			this->setWall(wall, mouseErr);
 			
 			// DEBUG
-			raspiCam.showImg();
-			cout << "mouseErr.x:" << mouseErr.x <<endl;
-			cout << "mouseErr.y:" << mouseErr.y <<endl;
-			cout << "mouseErr.degree:" << mouseErr.degree <<endl;
+			//raspiCam.showImg();
+			//cout << "mouseErr.x:" << mouseErr.x <<endl;
+			//cout << "mouseErr.y:" << mouseErr.y <<endl;
+			//cout << "mouseErr.degree:" << mouseErr.degree <<endl;
 			
 			// WAIT
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -335,96 +335,93 @@ IndexVec MazeRunner::setRobotPos(IndexVec nowPos, Direction nextDir)
 
 void MazeRunner::robotPositionInit()
 {
-	MicroMouseDriver microMouseDriver;
-	microMouseDriver.inverse();
+	m_microMouseDriver.inverse();
 }
 
 void MazeRunner::robotMove(Direction nowDir, Direction nextDir)
 {
-	MicroMouseDriver microMouseDriver;
-
 	if(nowDir.bits.North)
 	{
 		if(nextDir.bits.North)
 		{
 			cout << "driveN" << endl;
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.East)
 		{
 			cout << "turnR" << endl;
-			microMouseDriver.turnRight();
+			m_microMouseDriver.turnRight();
 		}
 		else if(nextDir.bits.South)
 		{
 			cout << "inv" << endl;
-			microMouseDriver.inverse();
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.inverse();
+			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.West)
 		{
 			cout << "turnL" << endl;
-			microMouseDriver.turnLeft();
+			m_microMouseDriver.turnLeft();
 		}
 	}
 	else if(nowDir.bits.East)
 	{
 		if(nextDir.bits.North)
 		{
-			microMouseDriver.turnLeft();
+			m_microMouseDriver.turnLeft();
 		}
 		else if(nextDir.bits.East)
 		{
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.South)
 		{
-			microMouseDriver.turnRight();
+			m_microMouseDriver.turnRight();
 		}
 		else if(nextDir.bits.West)
 		{
-			microMouseDriver.inverse();
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.inverse();
+			m_microMouseDriver.driveNBlock(1);
 		}
 	}
 	else if(nowDir.bits.South)
 	{
 		if(nextDir.bits.North)
 		{
-			microMouseDriver.inverse();
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.inverse();
+			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.East)
 		{
-			microMouseDriver.turnLeft();
+			m_microMouseDriver.turnLeft();
 		}
 		else if(nextDir.bits.South)
 		{
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.West)
 		{
-			microMouseDriver.turnRight();
+			m_microMouseDriver.turnRight();
 		}
 	}
 	else if(nowDir.bits.West)
 	{
 		if(nextDir.bits.North)
 		{
-			microMouseDriver.turnRight();
+			m_microMouseDriver.turnRight();
 		}
 		else if(nextDir.bits.East)
 		{
-			microMouseDriver.inverse();
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.inverse();
+			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.South)
 		{
-			microMouseDriver.turnLeft();
+			m_microMouseDriver.turnLeft();
 		}
 		else if(nextDir.bits.West)
 		{
-			microMouseDriver.driveNBlock(1);
+			m_microMouseDriver.driveNBlock(1);
 		}
 	}
 }
@@ -432,14 +429,13 @@ void MazeRunner::robotMove(Direction nowDir, Direction nextDir)
 
 void MazeRunner::robotMoveSequence(Operation runSequence)
 {
-	MicroMouseDriver microMouseDriver;
 	int N = static_cast<int16_t>(runSequence.n);
 
 	switch(runSequence.op)
 	{
 		// 直進
 		case Operation::OperationType::FORWARD:
-			microMouseDriver.driveNBlock(N);
+			m_microMouseDriver.driveNBlock(N);
 			break;
 		// 斜めに直進(普通の直進とは進む距離が違う)
 		case Operation::OperationType::FORWARD_DIAG:
@@ -448,7 +444,7 @@ void MazeRunner::robotMoveSequence(Operation runSequence)
 		case Operation::OperationType::TURN_RIGHT90:
 			for(int i=0;i<N;i++)
 			{
-				microMouseDriver.spinRight();
+				m_microMouseDriver.spinRight();
 			}
 			break;
 		// 右に45度旋回
@@ -458,7 +454,7 @@ void MazeRunner::robotMoveSequence(Operation runSequence)
 		case Operation::OperationType::TURN_LEFT90:
 			for(int i=0;i<N;i++)
 			{
-				microMouseDriver.spinLeft();
+				m_microMouseDriver.spinLeft();
 			}
 			break;
 		// 	左に45度旋回
@@ -466,7 +462,7 @@ void MazeRunner::robotMoveSequence(Operation runSequence)
 			break;
 		// 停止
 		case Operation::OperationType::STOP:
-			microMouseDriver.stop();
+			m_microMouseDriver.stop();
 			break;
 		default:
 			break;

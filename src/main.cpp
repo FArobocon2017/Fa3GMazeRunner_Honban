@@ -44,12 +44,6 @@ int main()
 		mazeRunner.startMonitorCamera();
 	});
 
-	// ↓ DEBUG
-	mazeRunner.dbg();
-	ftr.wait();
-	return 0;
-	// ↑ DEBUG
-	
 	
 	// 迷路探索開始
 	usleep(2000000);
