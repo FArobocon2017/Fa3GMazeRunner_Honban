@@ -163,14 +163,29 @@ void MazeRunner::startMonitorCamera()
 			//cout << "mouseErr.x:" << mouseErr.x <<endl;
 			//cout << "mouseErr.y:" << mouseErr.y <<endl;
 			//cout << "mouseErr.degree:" << mouseErr.degree <<endl;
-			if(mouseErr.x >10)
+			if(mouseErr.x > 10)
 			{
 				m_microMouseDriver.adjust(HOSEI10, 0);
 			}
-			else if(mouseErr.x <-10)
+			else if(mouseErr.x < -10)
 			{
 				m_microMouseDriver.adjust(0, HOSEI10);
 			}
+			
+			if(mouseErr.y > 20)
+			{
+				//m_microMouseDriver.getMotor(l,r);
+				m_microMouseDriver.adjust( -40, -40);
+			}
+			else if(mouseErr.y > 10)
+			{
+				m_microMouseDriver.adjust( -20, -20);
+			}
+			else if(mouseErr.y < -10)
+			{
+				m_microMouseDriver.adjust( HOSEI10, HOSEI10 );
+			}
+			
 			
 			// WAIT
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -249,8 +264,6 @@ void MazeRunner::exploreMaze(Agent& agent)
 			 mouseErr.x << ", " <<
 			 mouseErr.y << ", " <<
 			 mouseErr.degree << endl;
-
-			//this->adjustMove(mouseErr.x, mouseErr.y, mouseErr.degree);
 		}
 		
 		// 壁情報変換（左前右　→　東西南北）
@@ -294,6 +307,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 		if (agent.getState() == Agent::SEARCHING_REACHED_GOAL)
 		{
 			agent.forceGotoStart();
+			usleep(300000);
 		}
 
 		//Agentの状態が探索中の場合は次に進むべき方向を取得する
