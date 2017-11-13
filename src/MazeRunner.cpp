@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <unistd.h>
 #include <chrono>
 #include <opencv2/opencv.hpp>
@@ -156,36 +157,70 @@ void MazeRunner::startMonitorCamera()
 			}
 			this->setWall(wall, mouseErr);
 			
-
-			//raspiCam.showImg();
-
 			// DEBUG
+			raspiCam.showImg();
 			//cout << "mouseErr.x:" << mouseErr.x <<endl;
 			//cout << "mouseErr.y:" << mouseErr.y <<endl;
 			//cout << "mouseErr.degree:" << mouseErr.degree <<endl;
+			
+			int correctL=0;
+			int correctR=0;
+			// X
 			if(mouseErr.x > 10)
 			{
-				m_microMouseDriver.adjust(HOSEI10, 0);
+				correctL=8;
+				correctR=0;
+			}
+			else if(mouseErr.x > 5)
+			{
+				//correctL=5;
+				//correctR=0;
+			}
+			else if(mouseErr.x > 3)
+			{
+				//correctL=3;
+				//correctR=0;
 			}
 			else if(mouseErr.x < -10)
 			{
-				m_microMouseDriver.adjust(0, HOSEI10);
+				correctL=0;
+				correctR=8;
 			}
-			
+			else if(mouseErr.x < -5)
+			{
+				//correctL=0;
+				//correctR=5;
+			}
+			else if(mouseErr.x < -3)
+			{
+				//correctL=0;
+				//correctR=3;
+			}
+			// Y
 			if(mouseErr.y > 20)
 			{
+				int l,r;
 				//m_microMouseDriver.getMotor(l,r);
-				m_microMouseDriver.adjust( -40, -40);
+				correctL=-20;
+				correctR=-20;
 			}
 			else if(mouseErr.y > 10)
 			{
-				m_microMouseDriver.adjust( -20, -20);
+				int l,r;
+				correctL=-10;
+				correctR=-10;
 			}
 			else if(mouseErr.y < -10)
 			{
-				m_microMouseDriver.adjust( HOSEI10, HOSEI10 );
+				correctL=50;
+				correctR=50;
 			}
-			
+			else if(mouseErr.y < -15)
+			{
+				correctL=80;
+				correctR=80;
+			}
+			m_microMouseDriver.adjust( correctL, correctR );
 			
 			// WAIT
 			std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -213,19 +248,6 @@ void MazeRunner::dbg()
 		cout << "wall:[" << wall [0] << ", " << wall [1] << ", "<< wall [2]<< "]" << endl;
 		cout << "mouseErr:" << mouseErr.x << ", " << mouseErr.y << ", " << mouseErr.degree << endl;
 		usleep(1000000);
-		
-		/*
-		// Light Sensor Proc....
-		this->setCameraPermission(false);
-		// proc
-		for(int j=0; j<3; j++)
-		{
-			cout << "Light Sensor Proc:" << j << endl;
-			usleep(500000);
-		}
-		//
-		this->setCameraPermission(true);
-		*/
 	}
 }
 
@@ -315,7 +337,7 @@ void MazeRunner::exploreMaze(Agent& agent)
 		//nextDirの示す方向に進む
 		//突然今と180度逆の方向を示してくる場合もあるので注意
 		//止まらないと壁にぶつかる
-		this->robotMove(nowDir, nextDir);  //robotMove関数はDirection型を受け取ってロボットをそっちに動かす関数
+		this->robotMove(nowDir, nextDir, mouseErr);  //robotMove関数はDirection型を受け取ってロボットをそっちに動かす関数
 		nowPos = this->setRobotPos(nowPos, nextDir);
 		nowDir = nextDir;
 		//usleep(100000);
@@ -361,32 +383,41 @@ IndexVec MazeRunner::setRobotPos(IndexVec nowPos, Direction nextDir)
 
 void MazeRunner::robotPositionInit()
 {
+	int wall[3] = {0};
+	EstimatedErrors mouseErr = {0,0,0};
+	// 誤差情報の取得（カメラ機能使用）
+	this->getWall(wall, &mouseErr);
 	m_microMouseDriver.inverse();
+	m_microMouseDriver.turnNAngle(mouseErr.degree);
 }
 
-void MazeRunner::robotMove(Direction nowDir, Direction nextDir)
+void MazeRunner::robotMove(Direction nowDir, Direction nextDir, EstimatedErrors errors)
 {
+	/*
+	if(errors.degree>5 || errors.degree<-5)
+	{
+		m_microMouseDriver.stop();
+		m_microMouseDriver.turnNAngle(-errors.degree);
+	}
+	*/
+	cout << "errors:" << errors.x << ", " << errors.y << ", " << errors.degree << endl;
 	if(nowDir.bits.North)
 	{
 		if(nextDir.bits.North)
 		{
-			cout << "driveN" << endl;
 			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.East)
 		{
-			cout << "turnR" << endl;
 			m_microMouseDriver.turnRight();
 		}
 		else if(nextDir.bits.South)
-		{
-			cout << "inv" << endl;
+		{	
 			m_microMouseDriver.inverse();
 			m_microMouseDriver.driveNBlock(1);
 		}
 		else if(nextDir.bits.West)
 		{
-			cout << "turnL" << endl;
 			m_microMouseDriver.turnLeft();
 		}
 	}
@@ -453,13 +484,13 @@ void MazeRunner::robotMove(Direction nowDir, Direction nextDir)
 }
 
 
-void MazeRunner::robotMoveSequence(Operation runSequence)
+void MazeRunner::robotMoveSequence(OperationList runSequence)
 {
-	/*
+	
 	cout << "runSequence.size" << runSequence.size()<< endl;
-	int opSize =　runSequence.size();
+	
 	// opIdx番目のオペレーションを実行
-	for(int opIdx=0; opIdx<opSize; opIdx++)
+	for(int opIdx=0; opIdx<runSequence.size(); opIdx++)
 	{
 		cout << "runSequence[" << opIdx <<"]" << runSequence[opIdx].op << ","<< static_cast<int16_t>(runSequence[opIdx].n) << endl;
 		
@@ -501,12 +532,11 @@ void MazeRunner::robotMoveSequence(Operation runSequence)
 				break;
 		}
 	}
-	*/
 }
 
 
 /// 必要な定数 ///
-
+/*
 // 許容範囲内
 int xTolerance = 10;
 int yTolerance = 10;
@@ -527,7 +557,6 @@ void MazeRunner::adjustMove(int x, int y, int degTheta)
 		return;	 // 何もしない
 	}
 	
-	///*
 
 	// 他のパターン（前に詰まりそうで、後ろ側に空間があるパタン）
 	/// ①後ろ方向に移動
@@ -541,7 +570,7 @@ void MazeRunner::adjustMove(int x, int y, int degTheta)
 	double moveForward = (double)y - (moveBack * cos(radTheta));
 	mRunner.driveMM(moveForward);  // moveForward(mm)分だけ前に進む
 
-//*/
 
 	return; // 不要
 }
+*/

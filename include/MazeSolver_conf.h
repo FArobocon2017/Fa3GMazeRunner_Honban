@@ -10,7 +10,8 @@
 //ゴールとしたい座標を並べる
 //4個でなくてもよい
 #define MAZE_GOAL_LIST {IndexVec(3,7),IndexVec(3,8),IndexVec(4,7),IndexVec(4,8)}
-//#define MAZE_GOAL_LIST {IndexVec(0,3)}
+//#define MAZE_GOAL_LIST {IndexVec(4,7)}
+//#define MAZE_GOAL_LIST {IndexVec(0,5)}
 
 
 /****************************************

@@ -131,7 +131,7 @@ void MicroMouseDriver::spinLeft()
 	cout << "spinLeft"<< endl;
 	m_bStopCorrection = true;
 	int sleepTime = (int)calculateTurnSleepTime(80, STEP_MIDDLE);
-	this->setMotor(-STEP_MIDDLE-HOSEI10, STEP_MIDDLE+HOSEI10);
+	this->setMotor(-STEP_MIDDLE-HOSEI20, STEP_MIDDLE+HOSEI20);
 	controlMotorPrecisely(sleepTime);
 	stop();
 	m_bStopCorrection = false;
@@ -144,7 +144,7 @@ void MicroMouseDriver::spinRight()
 	cout << "spinRight"<< endl;
 	m_bStopCorrection = true;
 	int sleepTime = (int)calculateTurnSleepTime(80, STEP_MIDDLE);
-	this->setMotor(STEP_MIDDLE+HOSEI10, -STEP_MIDDLE-HOSEI10);
+	this->setMotor(STEP_MIDDLE, -STEP_MIDDLE);
 	controlMotorPrecisely(sleepTime);
 	stop();
 	m_bStopCorrection = false;

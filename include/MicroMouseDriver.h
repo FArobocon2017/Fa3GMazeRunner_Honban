@@ -10,12 +10,13 @@
 #define	PI					    3.14159	//π
 #define	WHEEL_RADIUS			47		//車輪の直径(mm)
 #define	DEGREE					360		//360°
-#define	BLOCK					180		//1ブロックの大きさ(mm)
+#define	BLOCK					185		//1ブロックの大きさ(mm)
 #define	WHEEL_AXLE				95		//車軸の長さ(mm)
 #define	RADIAN_TO_ANG			57.2958	
 #define	ANG_TO_RADIAN			0.0174	
 #define	HOSEI5					5		
 #define	HOSEI10					10		
+#define	HOSEI15					15		
 #define	HOSEI20					20		
 #define	HOSEI30					30		
 #define	HOSEI50					50	

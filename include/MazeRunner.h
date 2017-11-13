@@ -64,8 +64,8 @@ public:
 	void startMonitorCamera();
 	void exploreMaze(Agent& agent); //!< 迷路探索実施
 	void robotPositionInit();
-	void robotMove(Direction nowDir, Direction nextDir);
-	void robotMoveSequence(Operation runSequence);
+	void robotMove(Direction nowDir, Direction nextDir, EstimatedErrors errors);
+	void robotMoveSequence(OperationList runSequence);
 	void adjustMove(int x, int y, int degTheta);
 	void dbg(); // !< For Debug
 };

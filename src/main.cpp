@@ -76,9 +76,9 @@ int main()
 	cout << "" << endl;
 	cout << "--Run Sequence--" << endl;
 	const OperationList &runSequence = agent.getRunSequence();
-	//mazeRunner.robotMoveSequence(runSequence); //robotMode関数はOperation型を受け取ってそれを実行する関数
+	mazeRunner.robotMoveSequence(runSequence); //robotMode関数はOperation型を受け取ってそれを実行する関数
 
-	ftr.wait();
+	//ftr.wait();
 	
 	//fin
 	cout << "--Finished--" << endl;

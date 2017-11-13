@@ -116,8 +116,8 @@ void RaspiCam::createWindow()
 	//cv::namedWindow("leftRoi", CV_WINDOW_AUTOSIZE);
 	//cv::namedWindow("rightRoi", CV_WINDOW_AUTOSIZE);
 	//cv::namedWindow("frontBinImg", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("leftBinImg", CV_WINDOW_AUTOSIZE);
-	cv::namedWindow("rightBinImg", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("leftBinImg", CV_WINDOW_AUTOSIZE);
+	//cv::namedWindow("rightBinImg", CV_WINDOW_AUTOSIZE);
 	//cv::namedWindow("frontThinRoi", CV_WINDOW_AUTOSIZE);
 	//cv::namedWindow("leftPillarRoi", CV_WINDOW_AUTOSIZE);
 	//cv::namedWindow("rightPillarRoi", CV_WINDOW_AUTOSIZE);
@@ -133,8 +133,8 @@ void RaspiCam::showImg()
 	//cv::imshow("leftRoi",leftRoi);
 	//cv::imshow("rightRoi",rightRoi);
 	//cv::imshow("frontBinImg",frontBinImg);
-	cv::imshow("leftBinImg",leftBinImg);
-	cv::imshow("rightBinImg",rightBinImg);
+	//cv::imshow("leftBinImg",leftBinImg);
+	//cv::imshow("rightBinImg",rightBinImg);
 	//cv::imshow("frontThinRoi",frontThinRoi);
 	//cv::imshow("leftPillarRoi",leftPillarRoi);
 	//cv::imshow("rightPillarRoi",rightPillarRoi);
